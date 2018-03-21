@@ -15,8 +15,7 @@ const app = express();
  * MONGODB CONNECTION
  */
 
-// Setup MongoDB connection using the global promise library and then get connection
-mongoose.connect(DB_URL, { promiseLibrary: global.Promise }, (error) => {
+mongoose.connect(DB_URL, (error) => {
   if (error) {
     console.log(`MongoDB connection error: ${error}`);
 
@@ -69,8 +68,6 @@ app.use(morgan('dev'));
 
 // API Routes
 app.use('/', require('./routes/index'));
-app.use('/map', require('./routes/map'));
-app.use('/search', require('./routes/search'));
 app.use('/users', require('./routes/users'));
 
 // TODO: Create additional routes as necessary
