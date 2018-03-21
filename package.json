@@ -8,8 +8,7 @@
     "start": "node server.js",
     "test-server": "cross-env NODE_ENV=test mocha tests/**/*.test.js --timeout 10000 -r chai/register-expect; exit 0",
     "test-watch": "nodemon --exec 'npm test'",
-    "test": "npm run test-server",
-    "migrate": "knex migrate:latest"
+    "test": "npm run test-server"
   },
   "author": "Gabriel Grover",
   "license": "MIT",
@@ -24,13 +23,10 @@
     "await-to-js": "^2.0.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.2",
-    "bookshelf": "^0.13.0",
     "express": "^4.16.3",
     "jsonwebtoken": "^8.2.0",
-    "knex": "^0.14.4",
     "mongodb": "^3.0.4",
     "mongoose": "^5.0.11",
-    "morgan": "^1.9.0",
-    "pg": "^7.4.1"
+    "morgan": "^1.9.0"
   }
 }
