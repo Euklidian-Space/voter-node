@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const bcrypt = require('bcryptjs');
+const { validatePassword } = require("./validations");
 
 const userSchema = new Schema({
   name: {type: String, required: true},
@@ -8,12 +10,17 @@ const userSchema = new Schema({
 });
 
 userSchema.virtual("password")
-  .get(() => this._password)
-  .set(val => {
+  .get(function() { return this._password; })
+  .set(function(val) {
     this._password = val;
-    console.log("setting: ", val);
-    this.passwordHash = "test";
-  })
+    validatePassword(val)
+      .then(pw => {
+        const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync(Date.now().toString(), salt);
+        this.passwordHash = hash;
+      }).catch(err => this.invalidate("passwordHash", err));
+  });
+
 
 
 module.exports = mongoose.model("Users", userSchema);

@@ -3,22 +3,32 @@ const User = require('../../models/user');
 describe("User Model", () => {
   const fields = ["name", "email", "passwordHash"];
 
-  it("should require a name, email, and password", done => {
+  it("should require a name, email, and passwordHash", done => {
     const user = new User();
     user.validate(err => {
-      expect(err).to.exist;
+      expect(err).toBeTruthy()
       for (const field of fields) {
-        expect(err.errors[field]).to.exist;
+        expect(err.errors[field]).toBeDefined();
       }
     });
     done();
   });
 
-  it("should not save passwords as plain test", done => {
-    const user = new User({name: "john", email: "john@example.com", password: "password1234"});
-    console.log(user);
-    user.validate(({errors}) => {
-      expect(errors).to.not.exist
+
+  it("should not save passwords as plain text", done => {
+    const user = new User({name: "john", email: "john@example.com", password: "Password1234!"});
+    user.validate(function(err) {
+      expect(err).toBeFalsy();
+      expect(user.passwordHash).not.toBe("Password1234!");
+    });
+    done();
+  });
+
+  it("should require a specific password format", done => {
+    const user = new User({name: "john", email: "john@example.com", password: "Password1234"});
+    user.validate(function({ errors }) {
+      const { passwordHash: { message } } = errors;
+      expect(message).toBe("Password must contain atleast one uppercase letter, one lowercase letter, one number and one special character.");
     });
     done();
   });
