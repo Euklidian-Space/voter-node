@@ -24,6 +24,8 @@ mongoose.connect(DB_URL, (error) => {
   }
 });
 
+mongoose.Promise = global.Promise;
+
 const db = mongoose.connection;
 
 /**
