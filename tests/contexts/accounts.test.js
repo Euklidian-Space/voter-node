@@ -1,4 +1,4 @@
-const { createUser, getUserByEmail } = require("../../models/accounts");
+const { createUser, getUserByEmail } = require("../../contexts/accounts");
 const { connectToTestDB, disconnectAndClearTestDB } = require("../helpers");
 
 let db;

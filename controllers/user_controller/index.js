@@ -1,4 +1,4 @@
-const { createUser } = require("../../models/accounts");
+const { createUser } = require("../../contexts/accounts");
 
 exports.create = (req, res) => {
   const newUser = req.body;
