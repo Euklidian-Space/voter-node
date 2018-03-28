@@ -14,7 +14,6 @@
   "devDependencies": {
     "cross-env": "^5.1.4",
     "jest": "^22.4.3",
-    "mockery": "^2.1.0",
     "node-mocks-http": "^1.5.8",
     "nodemon": "^1.17.2"
   },
@@ -27,5 +26,19 @@
     "mongodb": "^3.0.4",
     "mongoose": "^5.0.11",
     "morgan": "^1.9.0"
+  },
+  "jest": {
+    "verbose": false,
+    "coverageReporters": [
+      "text"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 50,
+        "functions": 50,
+        "lines": 50,
+        "statements": 50
+      }
+    }
   }
 }
