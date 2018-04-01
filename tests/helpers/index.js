@@ -1,4 +1,8 @@
 const http_mocks = require("node-mocks-http");
+const faker = require("faker");
+const { map, flow, range } = require("lodash/fp");
+const { passwordREGEX } = require("../../models/user/validations");
+const { to } = require("await-to-js");
 
 exports.connectToTestDB = () => {
   const { DB_URL, NODE_ENV: ENV } = require('../../config');
@@ -33,4 +37,24 @@ exports.buildResp = () => {
 
 exports.createRequest = opts => {
   return http_mocks.createRequest(opts);
+};
+
+exports.seedUsers = count => {
+  const users = createFakeUsers(count);
+  return seedFunc => seedFunc(users);
+};
+
+function createFakeUsers(count) {
+  const fakeUser = () => {
+    return {
+      name: faker.name.findName(),
+      email: faker.internet.email(),
+      password: "pAssword1234!"
+    };
+  };
+
+  return flow(
+    range(count), 
+    map(fakeUser)
+  )(0);
 };
