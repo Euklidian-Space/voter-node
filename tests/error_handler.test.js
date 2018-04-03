@@ -4,7 +4,7 @@ const { UserErrs, INTERNAL_ERR } = ErrorTypes;
 
 describe("ErrorHandler", () => {
 
-  it("should default to INTERNAL_ERR", () => {
+  it("should default to INTERNAL_ERR", done => {
     expect(ErrorHandler({
       message: "some error object we don't know the shape of"
     })).toEqual({
