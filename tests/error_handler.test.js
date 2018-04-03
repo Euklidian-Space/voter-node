@@ -1,8 +1,22 @@
 const ErrorTypes = require("../errors/error_types");
 const ErrorHandler = require("../errors/handler");
-const { UserErrs } = ErrorTypes;
+const { UserErrs, INTERNAL_ERR } = ErrorTypes;
 
 describe("ErrorHandler", () => {
+
+  it("should default to INTERNAL_ERR", () => {
+    expect(ErrorHandler({
+      message: "some error object we don't know the shape of"
+    })).toEqual({
+      type: INTERNAL_ERR,
+      errors: {
+        message: "some error object we don't know the shape of"
+      }
+    });
+
+    done();
+  });
+
   it("should handle REGISTRATION_ERR", done => {
     const errObj = { 
       errors: {
@@ -17,7 +31,6 @@ describe("ErrorHandler", () => {
         message: "some message"
       }
     };
-
     expect(received).toEqual(expected);
 
     done();
