@@ -1,3 +1,4 @@
 module.exports = {
-  REGISISTRATION_ERR: "REGISISTRATION_ERR"
-}
+  VALIDATION_ERR: "ValidationError", 
+  USER_NOT_FOUND_ERR: "UserNotFoundError"
+};

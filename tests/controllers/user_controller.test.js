@@ -1,7 +1,5 @@
-// const { buildResp, createRequest } = require("../helpers");
 const UserController = require("../../controllers/user_controller");
 const { to } = require("await-to-js");
-
 const { seedUsers } = require("../helpers");
 const generate10Users = () => seedUsers(10)(users => users);
 
@@ -29,7 +27,7 @@ describe("User Controller", () => {
   });
 
   describe("Create", () => {
-    const resovedUserMock = createUserMock(true);
+    const resolvedUserMock = createUserMock(true);
     const createRejectedUserMockWithErr = createUserMock(false);
     beforeEach(() => {
       req = {
@@ -40,8 +38,9 @@ describe("User Controller", () => {
         }
       };
     });
+
     it("should send status 200 and user data in response object", () => {
-      createUser.mockImplementation(resovedUserMock);
+      createUser.mockImplementation(resolvedUserMock);
       return UserController.create(req, res)
         .then(() => {
           expect(statusMock).toHaveBeenCalledWith(200);
@@ -49,22 +48,25 @@ describe("User Controller", () => {
         });
     });  
     
-    it("should send status 500 and error message when an api error occurs", () => {
+    it("should send status 404 and error message when there is a ValidationError", async () => {
       const errResp = {
-        error: {
+        errors: {
           fieldA: {message: "msgA"},
           fieldB: {message: "msgB"}
-        }
+        },
+        name: "ValidationError"
       };
+
       createUser.mockImplementation(createRejectedUserMockWithErr(errResp));
 
-      return UserController.create(req, res)
-        .catch(() => {
-          expect(statusMock).toHaveBeenCalledWith(500);
-          expect(sendSpy).toHaveBeenCalledWith(errResp);
-        });
-      
+      const [errs, _] =  await to(UserController.create(req, res));
+
+      expect(errs).toEqual(errResp.errors);
+      expect(statusMock).toHaveBeenCalledWith(404);
+      return expect(sendSpy).toHaveBeenCalledWith(errResp.errors);
     });
+
+    // it("should ")
   });
 
   describe("Show", () => {

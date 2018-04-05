@@ -1,7 +1,9 @@
-const { listUsers, createUser, getUserByEmail, getUserById } = require("../../contexts/accounts");
-const { connectToTestDB, disconnectAndClearTestDB, seedUsers } = require("../helpers");
 const { to } = require("await-to-js");
 const { flow, map } = require("lodash/fp")
+const { INVALID_ID, UserErrs } = require("../../errors/error_types");
+const { listUsers, createUser, getUserByEmail, getUserById } = require("../../contexts/accounts");
+const { connectToTestDB, disconnectAndClearTestDB, seedUsers } = require("../helpers");
+const User = require("../../models/user");
 const insertTenUsers = seedUsers(10);
 
 let db;
@@ -44,13 +46,12 @@ describe("Accounts context", () => {
         email: "john@example.com",
         password: "password"
       };
-
       const [errs, userReceived] = await to(createUser(user));
       const err_msg = errs.errors.passwordHash.message;
 
       expect(userReceived).toBeFalsy();
       expect(err_msg).toBe("Password must contain atleast one uppercase letter, one lowercase letter, one number and one special character.");
-      return expect(getUserByEmail("john@example.com")).rejects.toBe("Email not found.");
+      return expect(User.findOne({email: user.email})).resolves.toBeFalsy();
       
     });
 
@@ -73,31 +74,6 @@ describe("Accounts context", () => {
     });
   });
 
-  describe("getUserByEmail", () => {
-    it("should return user document for a found email", done => {
-      let _id;
-      createUser({
-        name: "john",
-        email: "john@cool.com",
-        password: "Password1234!"
-      }).then(({ id }) => {
-        getUserByEmail("john@cool.com")
-          .then(user => {
-            expect(user).toMatchObject({
-              name: "john",
-              id: id
-            });
-            done();
-          });
-      });
-    });
-
-    it("should reject for email not found with message", done => {
-      expect(getUserByEmail("some email not in db")).rejects.toBe("Email not found.");
-      done();
-    });
-  });
-
   describe("getUserById", () => {
     it("should return user document for valid id", async () => {
       const [err, user] = await to(createUser({
@@ -114,12 +90,20 @@ describe("Accounts context", () => {
     });
 
     it("should reject for invalid id", async () => {
-      return expect(getUserById("invalid_Id")).rejects.toBe("Invalid id");
+      const id = "id123";
+      return expect(getUserById(id)).rejects.toEqual({
+        message: `'${id}' is not a valid id`,
+        name: INVALID_ID
+      });
     });
 
     it("should reject for an id that is not found", async () => {
       const id = "000000000000000000000000";
-      return expect(getUserById(id)).rejects.toBe(`No user found by id: ${id}`);
+      const expected = {
+        message: `No user found with id: '${id}'`,
+        name: UserErrs.USER_NOT_FOUND_ERR
+      };
+      return expect(getUserById(id)).rejects.toEqual(expected);
     });
   });
 
@@ -134,9 +118,9 @@ describe("Accounts context", () => {
       return Promise.all(saveToDb(users));
     };    
 
-    beforeEach(() => insertTenUsers(intoDatabase));
-
     it("should list all documents in users collection", async () => {
+      await insertTenUsers(intoDatabase);
+
       return expect(listUsers()).resolves
         .toHaveLength(10);
     });

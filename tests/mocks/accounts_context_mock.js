@@ -31,5 +31,5 @@ exports.createUserMock = isValid => {
     return userObj => Promise.resolve(userObj);
   }
 
-  return err => () => Promise.reject({error: err});
+  return errs => () => Promise.reject(errs);
 }

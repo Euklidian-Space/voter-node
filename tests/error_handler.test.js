@@ -1,38 +1,42 @@
+const { to } = require("await-to-js");
 const ErrorTypes = require("../errors/error_types");
-const ErrorHandler = require("../errors/handler");
+const HandleError = require("../errors/handler");
 const { UserErrs, INTERNAL_ERR } = ErrorTypes;
 
 describe("ErrorHandler", () => {
-
-  it("should default to INTERNAL_ERR", done => {
-    expect(ErrorHandler({
-      message: "some error object we don't know the shape of"
-    })).toEqual({
-      type: INTERNAL_ERR,
-      errors: {
-        message: "some error object we don't know the shape of"
-      }
-    });
-
-    done();
+  let req, res, sendSpy, statusMock;
+  beforeEach(() => {
+    sendSpy = jest.fn();
+    statusMock = jest.fn().mockImplementation(code => res);
+    res = {
+      send: sendSpy,
+      status: statusMock
+    };
   });
 
-  it("should handle REGISTRATION_ERR", done => {
-    const errObj = { 
+  it("should handle ValidationError", async () => {
+    const errObj = {
       errors: {
-        message: "some message" 
+        message: "some message"
       },
       name: "ValidationError"
     };
-    const received = ErrorHandler(errObj);
-    const expected = {
-      type: UserErrs.REGISISTRATION_ERR,
+    [errs, _] = await to(HandleError(errObj, res));
+    expect(errs).toEqual({message: "some message"});
+    expect(statusMock).toHaveBeenCalledWith(404);
+    expect(sendSpy).toHaveBeenCalledWith({message: "some message"});
+  });
+
+  it("should send 500 status as default", async () => {
+    const errObj = {
       errors: {
         message: "some message"
-      }
+      },
+      name: "SOME_ERROR"
     };
-    expect(received).toEqual(expected);
-
-    done();
+    [errs, _] = await to(HandleError(errObj, res));
+    expect(errs).toEqual(errObj);
+    expect(statusMock).toHaveBeenCalledWith(500);
+    expect(sendSpy).toHaveBeenCalledWith(errObj);
   });
 });
