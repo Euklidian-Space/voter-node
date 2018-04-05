@@ -7,7 +7,7 @@
     "server": "nodemon server.js",
     "start": "node server.js",
     "test-watch": "nodemon --exec 'npm test'",
-    "test": "jest"
+    "test": "jest -o"
   },
   "author": "Gabriel Grover",
   "license": "MIT",
