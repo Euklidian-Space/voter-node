@@ -1,30 +1,31 @@
-exports.listUsersMock = (isValid, users) => {
+const { INVALID_ID, UserErrs } = require("../../errors/error_types");
+
+exports.listUsersMock = isValid => {
   if (isValid) {
-    return () => Promise.resolve({ users });
+    return users => () => Promise.resolve(users);
   }
 
-  return err => () => Promise.reject({error: err});
+  return err => () => Promise.reject(err);
 }
 
-exports.getUserByIdMock = (isValid, user) => {
+exports.getUserByIdMock = isValid => {
   if (!isValid) {
-    return err => () => Promise.reject({error: err});
-  } else if (user) {
-    return () => Promise.resolve(user);
+    return (errorType, id) => {
+      if (errorType === INVALID_ID) 
+        return () => Promise.reject({
+          message: `'${id}' is not a valid id`,
+          name: INVALID_ID
+        });
+      
+      return () => Promise.reject({
+        message: `No user found with id: '${id}'`,
+        name: UserErrs.USER_NOT_FOUND_ERR
+      });
+    };
   }
 
-  return () => Promise.reject({error: {message: `No user found by id: ${user.id}`}});
+  return userObj => () => Promise.resolve(userObj);
 };  
-
-exports.getUserByEmailMock = (isValid, user) => {
-  if (!isValid) {
-    return err => () => Promise.reject({error: err});
-  } else if (user) {
-    return () => Promise.resolve(user);
-  }
-
-  return () => Promise.reject({error: {message: `No user found by email: ${user.email}`}});
-};
 
 exports.createUserMock = isValid => {
   if (isValid) {

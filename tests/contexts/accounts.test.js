@@ -52,7 +52,6 @@ describe("Accounts context", () => {
       expect(userReceived).toBeFalsy();
       expect(err_msg).toBe("Password must contain atleast one uppercase letter, one lowercase letter, one number and one special character.");
       return expect(User.findOne({email: user.email})).resolves.toBeFalsy();
-      
     });
 
     it("should return errors for each invalid field", async () => {

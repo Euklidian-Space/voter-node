@@ -1,5 +1,6 @@
-const UserController = require("../../controllers/user_controller");
 const { to } = require("await-to-js");
+const UserController = require("../../controllers/user_controller");
+const { INVALID_ID, UserErrs, INTERNAL_ERR} = require("../../errors/error_types");
 const { seedUsers } = require("../helpers");
 const generate10Users = () => seedUsers(10)(users => users);
 
@@ -65,8 +66,6 @@ describe("User Controller", () => {
       expect(statusMock).toHaveBeenCalledWith(404);
       return expect(sendSpy).toHaveBeenCalledWith(errResp.errors);
     });
-
-    // it("should ")
   });
 
   describe("Show", () => {
@@ -77,6 +76,8 @@ describe("User Controller", () => {
       email: "euler@domain.com",
       password: "Password1234!"
     };
+    const resolvedGetUserMock = getUserByIdMock(true);
+    const rejectedGetUserMock = getUserByIdMock(false);
 
     beforeEach(() => {
       req = {
@@ -84,17 +85,11 @@ describe("User Controller", () => {
           id: valid_id
         }
       };
-      getUserById.mockImplementation(id => {
-        if (id === valid_id) {
-          return Promise.resolve(userObj);
-        }
-
-        return Promise.reject("No user found by id: " + id);
-      });
     });
 
     it("should send status of 200 for a valid id", async () => {
-      [err, user] = await to(UserController.show(req, res));
+      getUserById.mockImplementation(resolvedGetUserMock(userObj));
+      const [err, user] = await to(UserController.show(req, res));
       expect(err).toBeFalsy();
       expect(user).toMatchObject(userObj);
       expect(statusMock).toHaveBeenCalledWith(200);
@@ -103,42 +98,39 @@ describe("User Controller", () => {
 
     it("should send status 404 for invalid id", async () => {
       const id = "111111111111111111111111";
+      getUserById.mockImplementation(rejectedGetUserMock(INVALID_ID, id));
       req.params.id = id;
       [err, user] = await to(UserController.show(req, res));
-      expect(err).toEqual({error: "No user found by id: " + id});
+      expect(err).toEqual({
+        message: `'${id}' is not a valid id`,
+        name: INVALID_ID
+      });
       expect(statusMock).toHaveBeenCalledWith(404);
-      return expect(sendSpy).toHaveBeenCalledWith({error: "No user found by id: " + id});
+      return expect(sendSpy).toHaveBeenCalledWith({ message: `'${id}' is not a valid id` });
     });
   });
 
   describe("index", () => {
     const fakeUsers = generate10Users();
-
-    beforeEach(() => {
-      listUsers.mockImplementation(() => {
-        return Promise.resolve(fakeUsers);
-      });
-      res = {
-        send: sendSpy,
-        status: statusMock  
-      };
-    });
+    const resolvedListUsersMock = listUsersMock(true);
+    const rejectedListUserMock = listUsersMock(false);
 
     it("should send a status of 200 and list of users", async () => {
+      listUsers.mockImplementation(resolvedListUsersMock(fakeUsers));
       const [err, users] = await to(UserController.index(req, res));
+
       expect(err).toBeFalsy();
       expect(users).toEqual(fakeUsers);
       expect(statusMock).toHaveBeenCalledWith(200);
-      return expect(sendSpy).toHaveBeenCalledWith({
-        users: fakeUsers
-      });
+      return expect(sendSpy).toHaveBeenCalledWith(users);
     });
 
     it("should send a status of 400 and error message if an error occurrs", async () => {
-      const expected_error = { error: "There was a problem fetching users" };
-      listUsers.mockImplementation(() => {
-        return Promise.reject("There was a problem fetching users");
-      });
+      const expected_error = {
+        message: "There was a problem fetching users",
+        name: INTERNAL_ERR
+      };
+      listUsers.mockImplementation(rejectedListUserMock(expected_error));
 
       [err, users] = await to(UserController.index(req, res));
       expect(users).toBeFalsy();

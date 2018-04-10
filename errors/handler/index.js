@@ -16,7 +16,7 @@ function handlers(errObj) {
 
 
 function _default(errObj) {
-  if (errObj.processed) {
+  if (errObj.handled) {
     return errObj.passedHandler;
   }
 

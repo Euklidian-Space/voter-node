@@ -1,7 +1,7 @@
 const { to } = require("await-to-js");
 const { flow } = require("lodash/fp");
 const { createUser, getUserById, listUsers } = require("../../contexts/accounts");
-const ErrorHandler = require("../../errors/handler");
+const HandleErrors = require("../../errors/handler");
 
 exports.create = async (req, res) => {
   const newUser = req.body;
@@ -12,7 +12,7 @@ exports.create = async (req, res) => {
     return Promise.resolve(user);
   } 
 
-  return ErrorHandler(errs, res);
+  return HandleErrors(errs, res);
 };
 
 exports.show = async (req, res) => {
@@ -24,16 +24,15 @@ exports.show = async (req, res) => {
     return Promise.resolve(user);
   }
 
-  res.status(404).send({error: errs});
-  return Promise.reject({error: errs});
+  return HandleErrors(errs, res);
 };
 
 exports.index = async (req, res) => {
-  const [error, users] = await to(listUsers());
-  if (error) {
-    res.status(500).send({ error });
-    return Promise.reject({ error });
-  }  
-  res.status(200).send({users});
-  return Promise.resolve(users);
+  const [errs, users] = await to(listUsers());
+  if (!errs) {
+    res.status(200).send(users);
+    return Promise.resolve(users);
+  }
+
+  return HandleErrors(errs, res);
 };
