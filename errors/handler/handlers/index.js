@@ -1,6 +1,6 @@
 const { UserErrs, INVALID_ID } = require("../../error_types");
 
-function handleValidationError(errObj) {
+exports.handleValidationError = function(errObj) {
   if (errObj.handled || errObj.name !== UserErrs.VALIDATION_ERR) {
     return errObj;
   } 
@@ -19,7 +19,7 @@ function handleValidationError(errObj) {
   };
 }
 
-function handleInvalidIdError(errObj) {
+exports.handleInvalidIdError = function(errObj) {
   if (errObj.handled || errObj.name !== INVALID_ID) {
     return errObj;
   } 
@@ -37,7 +37,7 @@ function handleInvalidIdError(errObj) {
   };
 }
 
-function handleUserNotFoundErr(errObj) {
+exports.handleUserNotFoundError = function(errObj) {
   if (errObj.handled || errObj.name !== UserErrs.USER_NOT_FOUND_ERR) {
     return errObj;
   } 
@@ -54,9 +54,3 @@ function handleUserNotFoundErr(errObj) {
     handled: true
   };
 }
-
-module.exports = {
-  handleValidationError,
-  handleInvalidIdError,
-  handleUserNotFoundErr
-};

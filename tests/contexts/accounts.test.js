@@ -2,7 +2,7 @@ const { to } = require("await-to-js");
 const { flow, map } = require("lodash/fp")
 const { INVALID_ID, UserErrs } = require("../../errors/error_types");
 const { listUsers, createUser, getUserByEmail, getUserById } = require("../../contexts/accounts");
-const { connectToTestDB, disconnectAndClearTestDB, seedUsers } = require("../helpers");
+const { connectToTestDB, disconnectTestDB, clearDBCollection, seedUsers } = require("../helpers");
 const User = require("../../models/user");
 const insertTenUsers = seedUsers(10);
 
@@ -15,10 +15,19 @@ beforeEach(() => {
     }).catch(err => console.log(err));
 });
 
-afterEach(() => {
-  return disconnectAndClearTestDB(db, "users")
-    .then(() => db = null)
-    .catch(err => console.log(err));
+// afterEach(() => {
+//   return disconnectAndClearTestDB(db, "users")
+//     .then(() => db = null)
+//     .catch(err => console.log(err));
+// });
+afterEach(() => clearDBCollection(db, "users"));
+
+afterAll(done => {
+  if (db) {
+    db = null;
+    return disconnectTestDB(db);
+  }
+  done();
 });
 
 describe("Accounts context", () => {

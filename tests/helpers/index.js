@@ -14,11 +14,29 @@ exports.connectToTestDB = () => {
     }, reason => Promise.reject(reason));
 };
 
+exports.disconnectTestDB = db => {
+  return db.close();
+};
+
 exports.disconnectAndClearTestDB = (db, collection) => {
   return db.dropCollection(collection)
     .then(() => {
       return db.close()
         .then(() => Promise.resolve(null), reason => Promise.reject(reason));
+    }, reason => {
+      const { message } = reason;
+      if (message === "ns not found") {
+        return Promise.reject("No collection to clear. Perhaps already dropped.");
+      }
+
+      return Promise.reject(reason);
+    });
+};
+
+exports.clearDBCollection = async (db, collection) => {
+  return db.dropCollection(collection)
+    .then(() => {
+      return Promise.resolve(`${collection} collection dropped`);
     }, reason => {
       const { message } = reason;
       if (message === "ns not found") {
@@ -44,6 +62,14 @@ exports.seedUsers = count => {
   return seedFunc => seedFunc(users);
 };
 
+exports.generateMongoIDs = count => {
+  const MongoID = require("mongodb").ObjectId;
+  return flow(
+    range(count),
+    map(() => new MongoID())
+  )(0);
+};  
+
 function createFakeUsers(count) {
   const fakeUser = () => {
     return {
@@ -57,4 +83,4 @@ function createFakeUsers(count) {
     range(count), 
     map(fakeUser)
   )(0);
-};
+}

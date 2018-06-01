@@ -5,7 +5,7 @@ const { UserErrs, INVALID_ID } = require("../../errors/error_types");
 
 exports.createUser = async userObj => {
   const newUser = new User(userObj);
-  [errs, user] = await to(newUser.save());
+  const [errs, user] = await to(newUser.save());
   if (errs){
     return Promise.reject(errs);
   } 
