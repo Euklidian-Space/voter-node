@@ -23,12 +23,9 @@ exports.createPoll = async ({prompt, candidates, user}) => {
 exports.castVote = async ({poll_id, cand_id}) => {
   const [_, poll] = await to(Poll.findById(poll_id));
   const { candidates } = poll;
-  console.log("candidates: ", candidates);
-  console.log("cand_id == candidate[0].id?", cand_id == candidates[0].cand_id);
-  
-  const chosen_candidate = candidates.find(c => c.cand_id == cand_id);
+  const chosen_candidate = candidates.find(c => c.cand_id.equals(cand_id));
   chosen_candidate.vote_count += 1;
-  return Promise.resolve(poll);
+  return poll.save();
 };
 
 async function getCandidateIDs(names, poll_id, model) {

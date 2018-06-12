@@ -5,7 +5,7 @@ const { passwordREGEX } = require("../../models/user/validations");
 const { to } = require("await-to-js");
 
 exports.connectToTestDB = () => {
-  const { DB_URL, NODE_ENV: ENV } = require('../../config');
+  const { DB_URL } = require('../../config');
   const mongoose = require('mongoose');
 
   return mongoose.connect(DB_URL, {promiseLibrary: global.Promise})
@@ -62,13 +62,22 @@ exports.seedUsers = count => {
   return seedFunc => seedFunc(users);
 };
 
+exports.seedPolls = count => {
+  const polls = createFakePolls(count);
+  return seedFunc => seedFunc(polls);
+}
+
 exports.generateMongoIDs = count => {
-  const MongoID = require("mongodb").ObjectId;
   return flow(
     range(count),
-    map(() => new MongoID())
+    map(() => createMondoID())
   )(0);
 };  
+
+function createMondoID() {
+  const MongoID = require("mongodb").ObjectId;
+  return new MongoID();
+}
 
 function createFakeUsers(count) {
   const fakeUser = () => {
@@ -82,5 +91,20 @@ function createFakeUsers(count) {
   return flow(
     range(count), 
     map(fakeUser)
+  )(0);
+}
+
+function createFakePolls(count) {
+  const fakePoll = () => {
+    return {
+      prompt: faker.lorem.text(),
+      candidates: [faker.name.findName(), faker.name.findName()],
+      user: createMondoID()
+    };
+  };
+
+  return flow(
+    range(count),
+    map(fakePoll)
   )(0);
 }

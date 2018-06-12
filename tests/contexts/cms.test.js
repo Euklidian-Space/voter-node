@@ -1,11 +1,19 @@
 const { to } = require("await-to-js");
 const { INVALID_ID, UserErrs } = require("../../errors/error_types");
-const { createPoll, castVote } = require("../../contexts/CMS");
-const { connectToTestDB, disconnectTestDB, clearDBCollection, seedUsers } = require("../helpers");
+const { createPoll, castVote, listPolls } = require("../../contexts/CMS");
+const { 
+  connectToTestDB, 
+  disconnectTestDB, 
+  clearDBCollection, 
+  seedUsers, 
+  seedPolls,
+  generateMongoIDs
+ } = require("../helpers");
 const User = require("../../models/user");
 const Poll = require("../../models/poll");
 const Candidate = require("../../models/poll_candidate");
 const insertUser = seedUsers(1);
+const insert_10_Polls = seedPolls(10);
 
 let db;
 
@@ -28,7 +36,7 @@ afterEach(async done => {
   const [err, _] = await to(clear(db, ["users", "polls", "candidates"]));
 
   if (err) console.log(err);
-  db = null;
+  // db = null;
   done();
 });
 
@@ -99,13 +107,56 @@ describe("castVote", () => {
   });
 
   it("should update the vote count of given candidate", async () => {
-    const cand_id = savedPoll.candidates[0].cand_id;
+    const cand_id = savedPoll.candidates[0].cand_id.toString();
     const poll_id = savedPoll.id;
     const {candidates} = await castVote({poll_id, cand_id});
-    const received_candidate = candidate.find(c => c.cand_id === cand_id);
+    const received_candidate = candidates.find(c => c.cand_id.equals(cand_id));
+    expect(received_candidate).toBeTruthy();
+    return expect(received_candidate.vote_count).toBe(1);
+  });
+
+  it("should save updated poll to db", async () => {
+    const cand_id = savedPoll.candidates[0].cand_id.toString();
+    const poll_id = savedPoll.id;
+    await castVote({poll_id, cand_id});
+    const {candidates} = await Poll.findById(poll_id);
+    const received_candidate = candidates.find(c => c.cand_id.equals(cand_id));
+    expect(received_candidate).toBeTruthy();
     return expect(received_candidate.vote_count).toBe(1);
   });
 });
+
+xdescribe("listPolls", () => {
+  let user;
+  const intoDatabase = polls => {
+    const [poll_1, poll_2, poll_3, ...rest] = polls;
+    [user] = generateMongoIDs(1);
+    polls = [poll_1, poll_2, poll_3]
+      .map(p => Object.assign(p, {user}))
+      .concat(rest)
+      .map(p => createPoll(p));
+
+    return Promise.all(polls);
+  };
+
+  beforeAll(() => insert_10_Polls(intoDatabase));
+
+  it("should list all polls for given user id", async () => {
+    const [_, polls] = await to(listPolls(user.toString()));
+    const userPolls = polls.filter(p => p.user.equals(user));
+    return expect(userPolls.length).toBe(3);
+  });
+});
+
+
+
+
+
+
+
+
+
+
 
 
 

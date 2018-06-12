@@ -20,7 +20,11 @@ beforeEach(() => {
 //     .then(() => db = null)
 //     .catch(err => console.log(err));
 // });
-afterEach(() => clearDBCollection(db, "users"));
+afterEach(async done => {
+  const [err, _] = await to(clearDBCollection(db, "users"));
+  if (err) console.log(err);
+  done();
+});
 
 afterAll(done => {
   if (db) {
