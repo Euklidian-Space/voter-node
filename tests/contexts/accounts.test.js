@@ -15,11 +15,6 @@ beforeEach(() => {
     }).catch(err => console.log(err));
 });
 
-// afterEach(() => {
-//   return disconnectAndClearTestDB(db, "users")
-//     .then(() => db = null)
-//     .catch(err => console.log(err));
-// });
 afterEach(async done => {
   const [err, _] = await to(clearDBCollection(db, "users"));
   if (err) console.log(err);
@@ -120,21 +115,21 @@ describe("Accounts context", () => {
   });
 
   describe("listUsers", () => {
+    let _users;
     const intoDatabase = users => {
-      const promises = map(user => async () => createUser(user));
-      const promise_calls = map(promise => promise());
-      const saveToDb = flow(
-        promises,
-        promise_calls
-      );
-      return Promise.all(saveToDb(users));
+      _users = users;
+      return Promise.all(users.map(u => createUser(u)));
     };    
 
-    it("should list all documents in users collection", async () => {
-      await insertTenUsers(intoDatabase);
+    beforeEach(() => insertTenUsers(intoDatabase));
 
-      return expect(listUsers()).resolves
-        .toHaveLength(10);
+    it("should list all documents in users collection", async done => {
+      const received_users = await listUsers();
+      for (let expected_user of _users) {
+        const found = received_users.find(ru => ru.email === expected_user.email);
+        expect(found).toBeTruthy();
+      }
+      done();
     });
   });
 

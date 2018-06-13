@@ -45,6 +45,7 @@ afterAll(done => {
     db = null;
     return disconnectTestDB(db);
   } 
+
   done();
 });
 
@@ -126,7 +127,7 @@ describe("castVote", () => {
   });
 });
 
-xdescribe("listPolls", () => {
+describe("listPolls", () => {
   let user;
   const intoDatabase = polls => {
     const [poll_1, poll_2, poll_3, ...rest] = polls;
