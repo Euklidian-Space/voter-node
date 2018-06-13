@@ -28,6 +28,10 @@ exports.castVote = async ({poll_id, cand_id}) => {
   return poll.save();
 };
 
+exports.listPolls = async user => {
+  return Poll.find({ user });
+};
+
 async function getCandidateIDs(names, poll_id, model) {
   const [err, candidates] = await to(getCandidates(names, poll_id, model));
   return Promise.resolve(candidates.map(cand => cand.id));

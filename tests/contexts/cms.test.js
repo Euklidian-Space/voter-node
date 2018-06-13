@@ -144,7 +144,7 @@ describe("listPolls", () => {
 
   it("should list all polls for given user id", async () => {
     const [_, polls] = await to(listPolls(user.toString()));
-    const userPolls = polls.filter(p => p.user.equals(user));
+    const userPolls = polls.filter(p => p.user.equals(user.toString()));
     return expect(userPolls.length).toBe(3);
   });
 });
