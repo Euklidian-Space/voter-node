@@ -1,6 +1,7 @@
 const { to } = require("await-to-js");
-const { map, flow } = require("lodash/fp");
-const User = require("../../models/user");
+// const { map, flow } = require("lodash/fp");
+// const User = require("../../models/user");
+const { PollErrs, INVALID_ID } = require("../../errors/error_types");
 const Poll = require("../../models/poll");
 const PollCandidate = require("../../models/poll_candidate");
 
@@ -21,7 +22,16 @@ exports.createPoll = async ({prompt, candidates, user}) => {
 };
 
 exports.castVote = async ({poll_id, cand_id}) => {
-  const [_, poll] = await to(Poll.findById(poll_id));
+  const invalid_id = invalidIDAmong([poll_id, cand_id]);
+  if (invalid_id) {
+    return Promise.reject({
+      message: `'${invalid_id}' is not a valid id`,
+      name: INVALID_ID
+    });
+  }
+  const [err, poll] = await to(Poll.findById(poll_id));
+  // const [err, poll] = await to(Poll.findOne({id: poll_id}));
+  console.log("err: ", err);
   const { candidates } = poll;
   const chosen_candidate = candidates.find(c => c.cand_id.equals(cand_id));
   chosen_candidate.vote_count += 1;
@@ -63,4 +73,12 @@ function createCandidate({name, poll_id}, model) {
     name,
     polls: [poll_id]
   });
+}
+
+function invalidIDAmong(ids) {
+  return ids.find(id => !isValidID(id));
+}
+
+function isValidID(id) {
+  return id.match(/^[0-9a-f]{24}$/i);
 }

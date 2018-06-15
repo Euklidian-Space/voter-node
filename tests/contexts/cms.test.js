@@ -1,5 +1,5 @@
 const { to } = require("await-to-js");
-const { INVALID_ID, UserErrs } = require("../../errors/error_types");
+const { INVALID_ID, PollErrs } = require("../../errors/error_types");
 const { createPoll, castVote, listPolls } = require("../../contexts/CMS");
 const { 
   connectToTestDB, 
@@ -124,6 +124,27 @@ describe("castVote", () => {
     const received_candidate = candidates.find(c => c.cand_id.equals(cand_id));
     expect(received_candidate).toBeTruthy();
     return expect(received_candidate.vote_count).toBe(1);
+  });
+
+  it("should return err obj for invalid ids", async () => {
+    const cand_id = 'invalid id';
+    const poll_id = 'invalid id';
+    const expected_err = {
+      name: INVALID_ID,
+      message: `'${poll_id}' is not a valid id`,
+    }
+    return expect(castVote({poll_id, cand_id})).rejects.toEqual(expected_err);
+  });
+
+  it("should return err obj for a not found poll id", async () => {
+    const cand_id = savedPoll.candidates[0].cand_id.toString();
+    const poll_id = generateMongoIDs(1)[0].toString();
+    const expected_err = {
+      name: PollErrs.POLL_NOT_FOUND_ERR,
+      message: `No poll found with id: ${poll_id}`
+    };
+    return expect(castVote({poll_id, cand_id})).rejects
+      .toEqual(expected_err);
   });
 });
 

@@ -2,7 +2,6 @@ const User = require("../../models/user");
 const { to } = require("await-to-js");
 const { UserErrs, INVALID_ID } = require("../../errors/error_types");
 
-
 exports.createUser = async userObj => {
   const newUser = new User(userObj);
   const [errs, user] = await to(newUser.save());
