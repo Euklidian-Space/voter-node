@@ -29,9 +29,9 @@ exports.castVote = async ({poll_id, cand_id}) => {
       name: INVALID_ID
     });
   }
-  const [err, poll] = await to(Poll.findById(poll_id));
-  // const [err, poll] = await to(Poll.findOne({id: poll_id}));
-  console.log("err: ", err);
+  const [err, poll] = await to(getPollByID(poll_id));
+  if (err) return Promise.reject(err);
+
   const { candidates } = poll;
   const chosen_candidate = candidates.find(c => c.cand_id.equals(cand_id));
   chosen_candidate.vote_count += 1;
@@ -82,3 +82,23 @@ function invalidIDAmong(ids) {
 function isValidID(id) {
   return id.match(/^[0-9a-f]{24}$/i);
 }
+
+async function getPollByID(id) {
+  const [err, poll] = await to(Poll.findById(id));
+  const notFoundError = {
+    name: PollErrs.POLL_NOT_FOUND_ERR,
+    message: `No poll found with id: ${id}`
+  };
+
+  if (!poll) {
+    return Promise.reject(notFoundError);
+  } else if (err) {
+    return Promise.reject(err);
+  }
+
+  return Promise.resolve(poll);
+}
+
+
+
+

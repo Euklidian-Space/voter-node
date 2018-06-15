@@ -1,7 +1,7 @@
-const { UserErrs, INVALID_ID } = require("../../error_types");
+const { UserErrs, INVALID_ID, VALIDATION_ERR, PollErrs } = require("../../error_types");
 
 exports.handleValidationError = function(errObj) {
-  if (errObj.handled || errObj.name !== UserErrs.VALIDATION_ERR) {
+  if (errObj.handled || errObj.name !== VALIDATION_ERR) {
     return errObj;
   } 
 
@@ -43,13 +43,31 @@ exports.handleUserNotFoundError = function(errObj) {
   } 
 
   const passedHandler = res => {
-    const { message } = errObj
+    const { message } = errObj;
     res.status(404).send({ message });
     return Promise.reject(errObj);
   };
 
   return {
     ...errObj, 
+    passedHandler,
+    handled: true
+  };
+}
+
+exports.handlePollNotFoundError = function(errObj) {
+  if (errObj.handled || errObj.name !== PollErrs.POLL_NOT_FOUND_ERR) {
+    return errObj;
+  } 
+
+  const passedHandler = res => {
+    const { message } = errObj;
+    res.status(404).send({ message });
+    return Promise.reject(errObj);
+  };
+
+  return {
+    ...errObj,
     passedHandler,
     handled: true
   };

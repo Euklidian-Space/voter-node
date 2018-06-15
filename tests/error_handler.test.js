@@ -1,10 +1,8 @@
 const { to } = require("await-to-js");
-const ErrorTypes = require("../errors/error_types");
 const HandleError = require("../errors/handler");
-const { UserErrs, INTERNAL_ERR } = ErrorTypes;
 
 describe("ErrorHandler", () => {
-  let req, res, sendSpy, statusMock;
+  let res, sendSpy, statusMock;
   beforeEach(() => {
     sendSpy = jest.fn();
     statusMock = jest.fn().mockImplementation(code => res);
@@ -49,6 +47,17 @@ describe("ErrorHandler", () => {
     return expect(sendSpy).toHaveBeenCalledWith({message: errObj.message});
   });
 
+  it("should handle PollNotFoundError type", async () => {
+    const errObj = {
+      message: "some message", 
+      name: "PollNotFoundError"
+    };
+    const [errs, _] = await to(HandleError(errObj, res));
+    expect(errs).toEqual(errObj);
+    expect(statusMock).toHaveBeenCalledWith(404);
+    return expect(sendSpy).toHaveBeenCalledWith({message: errObj.message});
+  });
+
   it("should send 500 status as default", async () => {
     const errObj = {
       errors: {
@@ -61,4 +70,5 @@ describe("ErrorHandler", () => {
     expect(statusMock).toHaveBeenCalledWith(500);
     expect(sendSpy).toHaveBeenCalledWith(errObj);
   });
+
 });
