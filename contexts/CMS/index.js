@@ -1,11 +1,13 @@
 const { to } = require("await-to-js");
-// const { map, flow } = require("lodash/fp");
-// const User = require("../../models/user");
 const { PollErrs, INVALID_ID } = require("../../errors/error_types");
 const Poll = require("../../models/poll");
+const User = require("../../models/user");
 const PollCandidate = require("../../models/poll_candidate");
 
 exports.createPoll = async ({prompt, candidates, user}) => {
+  const [user_err, found_user] = await to(User.findById(user));
+  if (user_err) return Promise.reject(user_err);
+
   const newPoll = new Poll({
     prompt,
     user,
@@ -98,6 +100,7 @@ async function getPollByID(id) {
 
   return Promise.resolve(poll);
 }
+
 
 
 

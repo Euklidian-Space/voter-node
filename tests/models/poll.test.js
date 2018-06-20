@@ -39,7 +39,7 @@ describe("Poll", () => {
     return expect(errs).toBeFalsy();
   });
 
-  xit("should be associated to a user", async () => {
+  it("should be associated to a user", async () => {
     const candidates = generateMongoIDs(2);
     const poll = new Poll({
       prompt: "which is the better language",

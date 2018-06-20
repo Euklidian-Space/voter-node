@@ -63,7 +63,7 @@ exports.seedUsers = count => {
 };
 
 exports.seedPolls = count => {
-  const polls = createFakePolls(count);
+  const polls = pollDataForDBSeeding(count);
   return seedFunc => seedFunc(polls);
 }
 
@@ -73,6 +73,24 @@ exports.generateMongoIDs = count => {
     map(() => createMondoID())
   )(0);
 };  
+
+exports.createFakePolls = count => {
+  const fakePoll = () => {
+    return {
+      prompt: faker.lorem.text(),
+      candidates: [
+        { cand_id: createMondoID(), vote_count: Math.floor(Math.random() * 10) + 1  },
+        { cand_id: createMondoID(), vote_count: Math.floor(Math.random() * 10) + 1  }        
+      ],
+      user: createMondoID()
+    };
+  };
+
+  return flow(
+    range(count),
+    map(fakePoll)
+  )(0);
+};
 
 function createMondoID() {
   const MongoID = require("mongodb").ObjectId;
@@ -94,11 +112,14 @@ function createFakeUsers(count) {
   )(0);
 }
 
-function createFakePolls(count) {
+function pollDataForDBSeeding(count) {
   const fakePoll = () => {
     return {
       prompt: faker.lorem.text(),
-      candidates: [faker.name.findName(), faker.name.findName()],
+      candidates: [
+        faker.name.findName(), 
+        faker.name.findName()
+      ],
       user: createMondoID()
     };
   };
