@@ -24,8 +24,8 @@ exports.castVoteMock = isResolved => {
 exports.listPollsMock = isResolved => {
   if (isResolved) {
     return polls => user => {
-      const user_polls = polls.finds(p => p.user.equals(user));
-      Promise.resolve(user_polls);
+      const user_polls = polls.filter(p => p.user.equals(user));
+      return Promise.resolve(user_polls);
     }
   }
 
