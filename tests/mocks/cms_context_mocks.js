@@ -20,3 +20,14 @@ exports.castVoteMock = isResolved => {
 
   return errs => () => Promise.reject(errs);
 };
+
+exports.listPollsMock = isResolved => {
+  if (isResolved) {
+    return polls => user => {
+      const user_polls = polls.finds(p => p.user.equals(user));
+      Promise.resolve(user_polls);
+    }
+  }
+
+  return errs => () => Promise.reject(errs);
+};
