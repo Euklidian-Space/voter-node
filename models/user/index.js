@@ -16,7 +16,7 @@ userSchema.virtual("password")
     validatePassword(val)
       .then(pw => {
         const salt = bcrypt.genSaltSync(10);
-        const hash = bcrypt.hashSync(Date.now().toString(), salt);
+        const hash = bcrypt.hashSync(pw, salt);
         this.passwordHash = hash;
       }).catch(err => this.invalidate("passwordHash", err));
   });
