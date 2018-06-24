@@ -5,34 +5,26 @@ const HandleErrors = require("../../errors/handler");
 
 exports.create = async (req, res) => {
   const newUser = req.body;
-  const [errs, user] = await to(createUser(newUser));
+  const [err, user] = await to(createUser(newUser));
+  if (err) return HandleErrors(err, res);
 
-  if (!errs) {
-    res.status(200).send(user);
-    return Promise.resolve(user);
-  } 
-
-  return HandleErrors(errs, res);
+  res.status(200).send(user);
+  return Promise.resolve(user);
 };
 
 exports.show = async (req, res) => {
   const { id } = req.params;  
-  const [errs, user] = await to(getUserById(id));
+  const [err, user] = await to(getUserById(id));
+  if (err) return HandleErrors(err, res);
 
-  if (!errs) {
-    res.status(200).send(user);
-    return Promise.resolve(user);
-  }
-
-  return HandleErrors(errs, res);
+  res.status(200).send(user);
+  return Promise.resolve(user);
 };
 
 exports.index = async (req, res) => {
-  const [errs, users] = await to(listUsers());
-  if (!errs) {
-    res.status(200).send(users);
-    return Promise.resolve(users);
-  }
+  const [err, users] = await to(listUsers());
+  if (err) return HandleErrors(err, res);
 
-  return HandleErrors(errs, res);
+  res.status(200).send(users);
+  return Promise.resolve(users);
 };

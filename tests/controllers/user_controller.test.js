@@ -139,4 +139,32 @@ describe("User Controller", () => {
       return expect(sendSpy).toHaveBeenCalledWith(expected_error);
     });
   });
+
+  describe("login", () => {
+    const fakeUsers = generate10Users();
+    const bcrypt = require('bcryptjs');
+    const hashPasswords = users => {
+      return users.map(u => {
+        const passwordHash = bcrypt.hashSync(u.password, 1);
+        return {
+          name: u.name,
+          email: u.email,
+          passwordHash
+        };
+      });
+    }
+    let users;
+
+    beforeEach(async done => {
+      users = hashPasswords(fakeUsers);
+      done();
+    });
+
+    xit("should should send 200 status and response object with user id and token", async () => {
+         
+    });
+  });
 });
+
+
+

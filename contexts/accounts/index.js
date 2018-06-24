@@ -33,6 +33,16 @@ exports.getUserById = async id => {
   }
 };
 
+exports.getUserByEmail = async email => {
+  const [err, user] = await to(User.findOne({ email }));
+  console.log("err: ", err);
+  console.log("user: ", user);
+
+  if (err) return Promise.reject(err);
+
+  return Promise.resolve(user);
+};
+
 exports.listUsers = async () => {
   return User.find({});
 };

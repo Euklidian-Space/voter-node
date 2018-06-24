@@ -1,5 +1,4 @@
 const { to } = require("await-to-js");
-const { flow, map } = require("lodash/fp")
 const { INVALID_ID, UserErrs } = require("../../errors/error_types");
 const { listUsers, createUser, getUserByEmail, getUserById } = require("../../contexts/accounts");
 const { connectToTestDB, disconnectTestDB, clearDBCollection, seedUsers } = require("../helpers");
@@ -133,4 +132,36 @@ describe("Accounts context", () => {
     });
   });
 
+  describe("getUserByEmail", () => {
+    let _users;
+    let email;
+    const intoDatabase = users => {
+      email = users[0].email;
+      _users = users;
+      return Promise.all(users.map(u => createUser(u)));
+    };    
+
+    beforeEach(() => insertTenUsers(intoDatabase));
+
+    it("should return user document for found email", async () => {
+      const expected_user = _users[0];
+      const [_, received_user] = await to(getUserByEmail(email));
+      const {name: received_name, email: received_email} = received_user;
+
+      expect(received_email).toBe(expected_user.email);
+      return expect(received_name).toBe(expected_user.name);
+    });
+
+    it("should reject with error if email is not found", async done => {
+      const incorrect_email = "name@invalid.com";
+      const [err, _] = await to(getUserByEmail(incorrect_email));
+      console.log(err);
+      done();
+    });
+  });
+
 });
+
+
+
+
