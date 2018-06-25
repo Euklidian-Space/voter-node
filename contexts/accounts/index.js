@@ -34,11 +34,16 @@ exports.getUserById = async id => {
 };
 
 exports.getUserByEmail = async email => {
-  const [err, user] = await to(User.findOne({ email }));
-  console.log("err: ", err);
-  console.log("user: ", user);
+  const [err, [user]] = await to(User.find({ email }));
 
-  if (err) return Promise.reject(err);
+  if (err) {
+    return Promise.reject(err);
+  } else if (!user) {
+    return Promise.reject({
+      message: `No user found with email: '${email}'`,
+      name: UserErrs.USER_NOT_FOUND_ERR
+    });
+  }
 
   return Promise.resolve(user);
 };

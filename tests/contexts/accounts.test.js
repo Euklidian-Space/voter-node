@@ -152,11 +152,13 @@ describe("Accounts context", () => {
       return expect(received_name).toBe(expected_user.name);
     });
 
-    it("should reject with error if email is not found", async done => {
+    it("should reject with error if email is not found", async () => {
       const incorrect_email = "name@invalid.com";
       const [err, _] = await to(getUserByEmail(incorrect_email));
-      console.log(err);
-      done();
+      return expect(err).toEqual({
+        message: `No user found with email: '${incorrect_email}'`,
+        name: UserErrs.USER_NOT_FOUND_ERR
+      });
     });
   });
 
