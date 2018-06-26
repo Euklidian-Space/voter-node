@@ -72,3 +72,21 @@ exports.handlePollNotFoundError = function(errObj) {
     handled: true
   };
 }
+
+exports.handleLoginError = function(errObj) {
+  if (errObj.handled || errObj.name !== UserErrs.LOGIN_ERR) {
+    return errObj;
+  }
+
+  const passedHandler = res => {
+    const { message } = errObj;
+    res.status(404).send({ message });
+    return Promise.reject(errObj);
+  };
+
+  return {
+    ...errObj,
+    passedHandler,
+    handled: true
+  };
+}

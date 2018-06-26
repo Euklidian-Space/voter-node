@@ -58,6 +58,17 @@ describe("ErrorHandler", () => {
     return expect(sendSpy).toHaveBeenCalledWith({message: errObj.message});
   });
 
+  it("should hand LoginError type", async () => {
+    const errObj = {
+      message: "some message",
+      name: "LoginError"
+    };
+    const [errs, _] = await to(HandleError(errObj, res));
+    expect(errs).toEqual(errObj);
+    expect(statusMock).toHaveBeenCalledWith(404);
+    return expect(sendSpy).toHaveBeenCalledWith({message: errObj.message});
+  });
+
   it("should send 500 status as default", async () => {
     const errObj = {
       errors: {
