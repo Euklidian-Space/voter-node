@@ -27,6 +27,19 @@ exports.getUserByIdMock = isValid => {
   return userObj => () => Promise.resolve(userObj);
 };  
 
+exports.getUserByEmailMock = isResolved => {
+  if (!isResolved) {
+    return email => () => Promise.reject({
+      message: `No user found with email: '${email}'`,
+      name: UserErrs.USER_NOT_FOUND_ERR
+    });
+  }
+
+  return users => email => {
+    return Promise.resolve(users.find(u => u.email === email)); 
+  };
+}
+
 exports.createUserMock = isValid => {
   if (isValid) {
     return userObj => Promise.resolve(userObj);
@@ -34,3 +47,11 @@ exports.createUserMock = isValid => {
 
   return errs => () => Promise.reject(errs);
 }
+
+
+
+
+
+
+
+

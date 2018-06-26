@@ -1,9 +1,10 @@
 const { to } = require("await-to-js");
 const { INVALID_ID, UserErrs } = require("../../errors/error_types");
-const { listUsers, createUser, getUserByEmail, getUserById } = require("../../contexts/accounts");
+const { listUsers, createUser, getUserByEmail, getUserById, comparePasswords } = require("../../contexts/accounts");
 const { connectToTestDB, disconnectTestDB, clearDBCollection, seedUsers } = require("../helpers");
 const User = require("../../models/user");
 const insertTenUsers = seedUsers(10);
+const bcrypt = require('bcryptjs');
 
 let db;
 
@@ -158,6 +159,21 @@ describe("Accounts context", () => {
       return expect(err).toEqual({
         message: `No user found with email: '${incorrect_email}'`,
         name: UserErrs.USER_NOT_FOUND_ERR
+      });
+    });
+  });
+
+  describe("comparePasswords", () => {
+    const pw = "passWord12341";
+    const pw_hash = bcrypt.hashSync(pw, 1);
+    it("should return true for matching passWords", () => {
+      expect(comparePasswords(pw, pw_hash)).resolves.toBe(true);
+    });
+
+    it("should reject with error for non matching password and hash", () => {
+      expect(comparePasswords("wrong pw", pw_hash)).rejects.toEqual({
+        message: "Incorrect password",
+        name: UserErrs.LOGIN_ERR
       });
     });
   });

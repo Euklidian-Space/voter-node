@@ -1,6 +1,7 @@
 const User = require("../../models/user");
-const { to } = require("await-to-js");
 const { UserErrs, INVALID_ID } = require("../../errors/error_types");
+const { to } = require("await-to-js");
+const bcrypt = require('bcryptjs');
 
 exports.createUser = async userObj => {
   const newUser = new User(userObj);
@@ -51,3 +52,19 @@ exports.getUserByEmail = async email => {
 exports.listUsers = async () => {
   return User.find({});
 };
+
+exports.comparePasswords = (password, hash) => {
+  if (!bcrypt.compareSync(password, hash)) {
+    return Promise.reject({
+      message: "Incorrect password",
+      name: UserErrs.LOGIN_ERR
+    });
+  } 
+
+  return Promise.resolve(true);
+};
+
+
+
+
+

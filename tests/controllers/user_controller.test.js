@@ -1,18 +1,23 @@
 const { to } = require("await-to-js");
+const jwt = require("jsonwebtoken");
+const { JWT_KEY } = require("../../config");
+const bcrypt = require('bcryptjs');
 const UserController = require("../../controllers/user_controller");
-const { INVALID_ID, UserErrs, INTERNAL_ERR} = require("../../errors/error_types");
-const { seedUsers } = require("../helpers");
+const { INVALID_ID, INTERNAL_ERR} = require("../../errors/error_types");
+const { seedUsers, generateMongoIDs } = require("../helpers");
 const generate10Users = () => seedUsers(10)(users => users);
+const generateMongoID = () => generateMongoIDs(1)[0];
 
 jest.mock("../../contexts/accounts", () => {
   return {
     createUser: jest.fn(),
     getUserById: jest.fn(),
-    listUsers: jest.fn()
+    listUsers: jest.fn(),
+    getUserByEmail: jest.fn()
   };
 });
-const { createUser, getUserById, listUsers } = require("../../contexts/accounts");
-const { createUserMock, getUserByIdMock, listUsersMock } = require("../mocks/accounts_context_mock");
+const { createUser, getUserById, listUsers, getUserByEmail } = require("../../contexts/accounts");
+const { createUserMock, getUserByIdMock, listUsersMock, getUserByEmailMock } = require("../mocks/accounts_context_mock");
 
 afterAll(jest.clearAllMocks);
 
@@ -132,7 +137,7 @@ describe("User Controller", () => {
       };
       listUsers.mockImplementation(rejectedListUserMock(expected_error));
 
-      [err, users] = await to(UserController.index(req, res));
+      const [err, users] = await to(UserController.index(req, res));
       expect(users).toBeFalsy();
       expect(err).toEqual(expected_error);
       expect(statusMock).toHaveBeenCalledWith(500);
@@ -141,28 +146,58 @@ describe("User Controller", () => {
   });
 
   describe("login", () => {
-    const fakeUsers = generate10Users();
-    const bcrypt = require('bcryptjs');
+    const resolvedGetUserByEmailMock = getUserByEmailMock(true);
+    const rejectedGetUserByEmailMock = getUserByEmailMock(false);
+    let password;
+    let email;
     const hashPasswords = users => {
+      correct_password = users[0].password;
+      email = users[0].email;
       return users.map(u => {
         const passwordHash = bcrypt.hashSync(u.password, 1);
         return {
           name: u.name,
           email: u.email,
+          id: generateMongoID(),
           passwordHash
         };
       });
     }
-    let users;
+    const users = hashPasswords(generate10Users());
 
     beforeEach(async done => {
-      users = hashPasswords(fakeUsers);
+      getUserByEmail.mockImplementation(resolvedGetUserByEmailMock(users));
+      req.body = {
+        email,
+        password
+      };
       done();
     });
 
-    xit("should should send 200 status and response object with user id and token", async () => {
-         
+    it("should should send 200 status and response object with user id and token", async () => {
+      const [_, respObj] = await to(UserController.login(req, res));
+      expect(statusMock).toHaveBeenCalledWith(200);
+      return expect(sendSpy).toHaveBeenCalledWith(respObj);
     });
+
+    it("should return a json web token that has the user id encoded", async () => {
+      const [{id: expected_id}] = users;
+      const [_, {token}] = await to(UserController.login(req, res));
+      const { id: decoded_id } = jwt.verify(token, JWT_KEY);
+      return expect(decoded_id).toEqual(expected_id.toString());
+    });
+
+    xit("should send 404 status and reject with err object for wrong password", async () => {
+      req.body = Object.assign(req.body, {password: "wrong password"});
+      const expected_error = {
+        message: "incorrect email or password", 
+        name: "LoginError"
+      };
+      const [err, _] = await to(UserController.login(req, res));
+
+      return expect(err).toEqual(expected_error);
+    });
+
   });
 });
 
