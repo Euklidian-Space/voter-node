@@ -1,8 +1,8 @@
 const { to } = require("await-to-js");
 const { createUser, getUserById, listUsers, getUserByEmail, comparePasswords } = require("../../contexts/accounts");
-const { JWT_KEY } = require("../../config");
+const { JWT_KEY } = require("config");
 const jwt = require("jsonwebtoken");
-const HandleErrors = require("../../errors/handler");
+const HandleErrors = require("src/errors/handler");
 
 exports.create = async (req, res) => {
   const newUser = req.body;
@@ -36,7 +36,6 @@ exports.login = async (req, res) => {
   const [errObj, _] = comparePasswords(password, passwordHash);
 
   if (errObj) {
-    console.log("dirname: ", __dirname);
     return Promise.reject(errObj);
   } 
 

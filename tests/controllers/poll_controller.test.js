@@ -1,17 +1,17 @@
 const { to } = require("await-to-js");
-const PollController = require("../../controllers/poll_controller");
+const PollController = require("src/controllers/poll_controller");
 const { generateMongoIDs, createFakePolls } = require("../helpers");
-const { VALIDATION_ERR, INVALID_ID } = require("../../errors/error_types");
-const Poll = require("../../models/poll");
+const { VALIDATION_ERR, INVALID_ID } = require("src/errors/error_types");
+const Poll = require("src/models/poll");
 
-jest.mock("../../contexts/CMS", () => {
+jest.mock("src/contexts/CMS", () => {
   return {
     createPoll: jest.fn(),
     castVote: jest.fn(),
     listPolls: jest.fn()
   };
 });
-const { createPoll, castVote, listPolls } = require("../../contexts/CMS");
+const { createPoll, castVote, listPolls } = require("src/contexts/CMS");
 const { createPollMock, castVoteMock, listPollsMock } = require("../mocks/cms_context_mocks");
 
 afterAll(jest.clearAllMocks);

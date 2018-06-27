@@ -1,14 +1,15 @@
 const { to } = require("await-to-js");
 const jwt = require("jsonwebtoken");
-const { JWT_KEY } = require("../../config");
+const { JWT_KEY } = require("config");
 const bcrypt = require('bcryptjs');
-const UserController = require("../../controllers/user_controller");
-const { INVALID_ID, INTERNAL_ERR} = require("../../errors/error_types");
+const UserController = require("src/controllers/user_controller");
+const { INVALID_ID, INTERNAL_ERR} = require("src/errors/error_types");
 const { seedUsers, generateMongoIDs } = require("../helpers");
 const generate10Users = () => seedUsers(10)(users => users);
 const generateMongoID = () => generateMongoIDs(1)[0];
 
-jest.mock("../../contexts/accounts", () => {
+
+jest.mock("src/contexts/accounts", () => {
   return {
     createUser: jest.fn(),
     getUserById: jest.fn(),
@@ -17,7 +18,7 @@ jest.mock("../../contexts/accounts", () => {
     comparePasswords: jest.fn()
   };
 });
-const { createUser, getUserById, listUsers, getUserByEmail, comparePasswords } = require("../../contexts/accounts");
+const { createUser, getUserById, listUsers, getUserByEmail, comparePasswords } = require("src/contexts/accounts");
 const { createUserMock, getUserByIdMock, listUsersMock, getUserByEmailMock, comparePasswordsMock } = require("../mocks/accounts_context_mock");
 
 afterAll(jest.clearAllMocks);

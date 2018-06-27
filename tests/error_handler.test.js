@@ -1,5 +1,5 @@
 const { to } = require("await-to-js");
-const HandleError = require("../errors/handler");
+const HandleError = require("src/errors/handler");
 
 describe("ErrorHandler", () => {
   let res, sendSpy, statusMock;

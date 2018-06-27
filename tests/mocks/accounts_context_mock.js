@@ -1,4 +1,4 @@
-const { INVALID_ID, UserErrs } = require("../../errors/error_types");
+const { INVALID_ID, UserErrs } = require("src/errors/error_types");
 
 exports.listUsersMock = isValid => {
   if (isValid) {

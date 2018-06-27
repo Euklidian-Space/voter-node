@@ -1,6 +1,5 @@
 const { to } = require("await-to-js");
-const PollCandidate = require("../../models/poll_candidate");
-const Poll = require("../../models/poll");
+const PollCandidate = require("src/models/poll_candidate");
 
 describe("PollCandidate", () => {
   it("should require a name field", async () => {

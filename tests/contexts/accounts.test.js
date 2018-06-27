@@ -1,8 +1,8 @@
 const { to } = require("await-to-js");
-const { INVALID_ID, UserErrs } = require("../../errors/error_types");
-const { listUsers, createUser, getUserByEmail, getUserById, comparePasswords } = require("../../contexts/accounts");
+const { INVALID_ID, UserErrs } = require("src/errors/error_types");
+const { listUsers, createUser, getUserByEmail, getUserById, comparePasswords } = require("src/contexts/accounts");
 const { seedUsers, connectToTestDB, disconnectTestDB } = require("../helpers");
-const User = require("../../models/user");
+const User = require("src/models/user");
 const insertTenUsers = seedUsers(10);
 const bcrypt = require('bcryptjs');
 

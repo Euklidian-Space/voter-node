@@ -1,7 +1,6 @@
 const { range } = require("lodash/fp");
 const { to } = require("await-to-js");
-const Poll = require("../../models/poll");
-const PollCandidate = require("../../models/poll_candidate");
+const Poll = require("src/models/poll");
 const { generateMongoIDs } = require("../helpers/index");
 
 describe("Poll", () => {

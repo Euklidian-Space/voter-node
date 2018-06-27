@@ -1,6 +1,6 @@
 const { to } = require("await-to-js");
-const { INVALID_ID, PollErrs } = require("../../errors/error_types");
-const { createPoll, castVote, listPolls } = require("../../contexts/CMS");
+const { INVALID_ID, PollErrs } = require("src/errors/error_types");
+const { createPoll, castVote, listPolls } = require("src/contexts/CMS");
 const { 
   connectToTestDB,
   disconnectTestDB,
@@ -8,8 +8,8 @@ const {
   seedPolls,
   generateMongoIDs
  } = require("../helpers");
-const User = require("../../models/user");
-const Poll = require("../../models/poll");
+const User = require("src/models/user");
+const Poll = require("src/models/poll");
 const insertUser = seedUsers(1);
 const insert_10_Polls = seedPolls(10);
 

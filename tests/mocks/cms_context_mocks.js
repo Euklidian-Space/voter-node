@@ -1,6 +1,3 @@
-// const { INVALID_ID, PollErrs } = require("../../errors/error_types");
-const Poll = require("../../models/poll");
-const { to } = require("await-to-js");
 
 exports.createPollMock = isValid => {
   if (isValid) return pollObj => Promise.resolve(pollObj);

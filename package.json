@@ -4,9 +4,9 @@
   "description": "backend api for a voting app",
   "main": "server.js",
   "scripts": {
-    "server": "nodemon server.js",
-    "start": "node server.js",
-    "test-watch": "nodemon --exec 'npm test'",
+    "server": "NODE_PATH=./ nodemon server.js",
+    "start": "NODE_PATH=./ node server.js",
+    "test-watch": "NODE_PATH=./ nodemon --exec 'npm test'",
     "test": "jest --runInBand",
     "all_tests": "jest --all"
   },
