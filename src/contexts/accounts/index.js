@@ -55,7 +55,7 @@ exports.listUsers = async () => {
 
 exports.comparePasswords = (password, hash) => {
   const errObj = {
-    message: "Incorrect password",
+    message: "incorrect password",
     name: UserErrs.LOGIN_ERR
   };
 

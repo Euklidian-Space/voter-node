@@ -162,7 +162,7 @@ describe("Accounts context", () => {
 
     it("should reject with error for non matching password and hash", () => {
       const errObj = {
-        message: "Incorrect password",
+        message: "incorrect password",
         name: UserErrs.LOGIN_ERR
       };
       expect(comparePasswords("wrong pw", pw_hash))

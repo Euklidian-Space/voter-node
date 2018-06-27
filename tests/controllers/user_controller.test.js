@@ -149,7 +149,7 @@ describe("User Controller", () => {
 
   describe("login", () => {
     const resolvedGetUserByEmailMock = getUserByEmailMock(true);
-    // const rejectedGetUserByEmailMock = getUserByEmailMock(false);
+    const rejectedGetUserByEmailMock = getUserByEmailMock(false);
     const validComparePasswordsMock = comparePasswordsMock(true);
     const invalidComparePasswordsMock = comparePasswordsMock(false);
     let password;
@@ -202,6 +202,38 @@ describe("User Controller", () => {
       const [err, _] = await to(UserController.login(req, res));
 
       return expect(err).toEqual(expected_error);
+    });
+
+    it("should send 404 status for wrong password", async () => {
+      comparePasswords.mockImplementation(invalidComparePasswordsMock);
+      req.body = Object.assign(req.body, {password: "wrong password"});
+      const expected_send = { message: "incorrect password" };
+      await to(UserController.login(req, res));
+
+      expect(statusMock).toHaveBeenCalledWith(404);
+      return expect(sendSpy).toHaveBeenCalledWith(expected_send);
+    });
+
+    it("should reject with err object for an unknown email", async () => {
+      const expected_error = {
+        message: `No user found with email: 'unknown@email.com'`,
+        name: "UserNotFoundError"
+      };
+      getUserByEmail.mockImplementation(rejectedGetUserByEmailMock("unknown@email.com"));
+      req.body = Object.assign(req.body, {email: "unknown@email.com"});
+
+      const [err, _] = await to(UserController.login(req, res));
+
+      return expect(err).toEqual(expected_error);
+    });
+
+    it("should send 404 status and error message for unknown email", async () => {
+      getUserByEmail.mockImplementation(rejectedGetUserByEmailMock("unknown@email.com"));
+      const expected_send = { message: "No user found with email: 'unknown@email.com'"};
+      await to(UserController.login(req, res));
+
+      expect(statusMock).toHaveBeenCalledWith(404);
+      return expect(sendSpy).toHaveBeenCalledWith(expected_send);
     });
 
   });

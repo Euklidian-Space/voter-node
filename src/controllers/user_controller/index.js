@@ -32,16 +32,15 @@ exports.index = async (req, res) => {
 
 exports.login = async (req, res) => {
   const {email, password} = req.body;
-  const [err, {id, passwordHash}] = await to(getUserByEmail(email));
-  const [errObj, _] = comparePasswords(password, passwordHash);
+  const [err, user] = await to(getUserByEmail(email));
+  if (err) return HandleErrors(err, res);
 
-  if (errObj) {
-    return Promise.reject(errObj);
-  } 
+  const [errObj, _] = comparePasswords(password, user.passwordHash);
+  if (errObj) return HandleErrors(errObj, res);
 
   const respObj = {
-    user: id,
-    token: jwt.sign({ id }, JWT_KEY, {expiresIn: 86400})
+    user: user.id,
+    token: jwt.sign({ id: user.id }, JWT_KEY, {expiresIn: 86400})
   };
 
   res.status(200).send(respObj);
