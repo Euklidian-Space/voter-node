@@ -1,5 +1,6 @@
 const { to } = require("await-to-js");
 const jwt = require("jsonwebtoken");
+const { last } = require("lodash/fp");
 const { JWT_KEY } = require("config");
 const bcrypt = require('bcryptjs');
 const UserController = require("src/controllers/user_controller");
@@ -47,13 +48,14 @@ describe("User Controller", () => {
       };
     });
 
-    it("should send status 200 and user data in response object", () => {
+    it("should send status 200 and user data in response object", async () => {
       createUser.mockImplementation(resolvedUserMock);
-      return UserController.create(req, res)
-        .then(() => {
-          expect(statusMock).toHaveBeenCalledWith(200);
-          expect(sendSpy).toBeCalledWith(req.body);
-        });
+      const [_, {user, token}] = await to(UserController.create(req, res));
+      const { id: decoded_id } = jwt.verify(token, JWT_KEY);
+      const send_arg = last(sendSpy.mock.calls)[0];
+
+      expect(user.id).toEqual(decoded_id);
+      return expect(send_arg).toEqual({user, token});
     });  
     
     it("should send status 404 and error message when there is a ValidationError", async () => {

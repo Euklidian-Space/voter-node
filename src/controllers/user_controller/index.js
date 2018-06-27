@@ -9,8 +9,13 @@ exports.create = async (req, res) => {
   const [err, user] = await to(createUser(newUser));
   if (err) return HandleErrors(err, res);
 
-  res.status(200).send(user);
-  return Promise.resolve(user);
+  const respObj = {
+    user,
+    token: token(user.id, JWT_KEY, jwt)
+  };
+
+  res.status(200).send(respObj);
+  return Promise.resolve(respObj);
 };
 
 exports.show = async (req, res) => {
@@ -40,10 +45,14 @@ exports.login = async (req, res) => {
 
   const respObj = {
     user: user.id,
-    token: jwt.sign({ id: user.id }, JWT_KEY, {expiresIn: 86400})
+    token: token(user.id, JWT_KEY, jwt)
   };
 
   res.status(200).send(respObj);
   return Promise.resolve(respObj);
 };
+
+function token(id, key, tokenModule) {
+  return tokenModule.sign({id}, key, {expiresIn: 86400});
+}
 
