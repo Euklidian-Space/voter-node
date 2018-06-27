@@ -1,32 +1,21 @@
 const { to } = require("await-to-js");
 const { INVALID_ID, UserErrs } = require("../../errors/error_types");
 const { listUsers, createUser, getUserByEmail, getUserById, comparePasswords } = require("../../contexts/accounts");
-const { connectToTestDB, disconnectTestDB, clearDBCollection, seedUsers } = require("../helpers");
+const { seedUsers, connectToTestDB, disconnectTestDB } = require("../helpers");
 const User = require("../../models/user");
 const insertTenUsers = seedUsers(10);
 const bcrypt = require('bcryptjs');
 
+let connection;
 let db;
 
-beforeEach(() => {
-  return connectToTestDB()
-    .then(dbInstance => {
-      db = dbInstance;
-    }).catch(err => console.log(err));
+beforeAll(async () => {
+  connection = await connectToTestDB(global.__MONGO_URI__);
+  db = connection.db;
 });
 
-afterEach(async done => {
-  const [err, _] = await to(clearDBCollection(db, "users"));
-  if (err) console.log(err);
-  done();
-});
-
-afterAll(done => {
-  if (db) {
-    db = null;
-    return disconnectTestDB(db);
-  }
-  done();
+afterAll(async () => {
+  await disconnectTestDB(connection, db);
 });
 
 describe("Accounts context", () => {
@@ -51,7 +40,7 @@ describe("Accounts context", () => {
     it("should return errors for invalid fields and not persist to DB", async () => {
       const user = {
         name: "john",
-        email: "john@example.com",
+        email: "john@example2.com",
         password: "password"
       };
       const [errs, userReceived] = await to(createUser(user));
@@ -166,15 +155,18 @@ describe("Accounts context", () => {
   describe("comparePasswords", () => {
     const pw = "passWord12341";
     const pw_hash = bcrypt.hashSync(pw, 1);
-    it("should return true for matching passWords", () => {
-      expect(comparePasswords(pw, pw_hash)).resolves.toBe(true);
+    it("should return [null, 'pass'] for matching passwords", () => {
+      expect(comparePasswords(pw, pw_hash))
+        .toEqual([null, "pass"]);
     });
 
     it("should reject with error for non matching password and hash", () => {
-      expect(comparePasswords("wrong pw", pw_hash)).rejects.toEqual({
+      const errObj = {
         message: "Incorrect password",
         name: UserErrs.LOGIN_ERR
-      });
+      };
+      expect(comparePasswords("wrong pw", pw_hash))
+        .toEqual([errObj, null]);
     });
   });
 

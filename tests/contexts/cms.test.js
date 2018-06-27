@@ -2,51 +2,27 @@ const { to } = require("await-to-js");
 const { INVALID_ID, PollErrs } = require("../../errors/error_types");
 const { createPoll, castVote, listPolls } = require("../../contexts/CMS");
 const { 
-  connectToTestDB, 
-  disconnectTestDB, 
-  clearDBCollection, 
+  connectToTestDB,
+  disconnectTestDB,
   seedUsers, 
   seedPolls,
   generateMongoIDs
  } = require("../helpers");
 const User = require("../../models/user");
 const Poll = require("../../models/poll");
-const Candidate = require("../../models/poll_candidate");
 const insertUser = seedUsers(1);
 const insert_10_Polls = seedPolls(10);
 
+let connection;
 let db;
 
-beforeEach(() => {
-  return connectToTestDB()
-    .then(dbInstance => {
-      db = dbInstance;
-    }).catch(err => console.log(err));
+beforeAll(async () => {
+  connection = await connectToTestDB(global.__MONGO_URI__);
+  db = connection.db;
 });
 
-afterEach(async done => {
-  if (!db) return Promise.resolve(null);
-
-  const clear = (_db, collections) => {
-    const clearedCollections = collections.map(collection => {
-      return clearDBCollection(_db, collection);
-    });
-    return Promise.all(clearedCollections);
-  };
-  const [err, _] = await to(clear(db, ["users", "polls", "candidates"]));
-
-  if (err) console.log(err);
-  // db = null;
-  done();
-});
-
-afterAll(done => {
-  if (db) {
-    db = null;
-    return disconnectTestDB(db);
-  } 
-
-  done();
+afterAll(async () => {
+  await disconnectTestDB(connection, db);
 });
 
 describe("CreatePoll", () => {

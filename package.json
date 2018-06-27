@@ -7,7 +7,7 @@
     "server": "nodemon server.js",
     "start": "node server.js",
     "test-watch": "nodemon --exec 'npm test'",
-    "test": "jest -o",
+    "test": "jest --runInBand",
     "all_tests": "jest --all"
   },
   "author": "Gabriel Grover",
@@ -33,6 +33,7 @@
     "morgan": "^1.9.0"
   },
   "jest": {
+    "testEnvironment": "node",
     "verbose": false,
     "coverageReporters": [
       "text"

@@ -54,14 +54,16 @@ exports.listUsers = async () => {
 };
 
 exports.comparePasswords = (password, hash) => {
+  const errObj = {
+    message: "Incorrect password",
+    name: UserErrs.LOGIN_ERR
+  };
+
   if (!bcrypt.compareSync(password, hash)) {
-    return Promise.reject({
-      message: "Incorrect password",
-      name: UserErrs.LOGIN_ERR
-    });
+    return [errObj, null];
   } 
 
-  return Promise.resolve(true);
+  return [null, "pass"];
 };
 
 

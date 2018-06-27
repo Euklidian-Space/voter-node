@@ -174,20 +174,20 @@ describe("User Controller", () => {
       done();
     });
 
-    it("should should send 200 status and response object with user id and token", async () => {
+    xit("should should send 200 status and response object with user id and token", async () => {
       const [_, respObj] = await to(UserController.login(req, res));
       expect(statusMock).toHaveBeenCalledWith(200);
       return expect(sendSpy).toHaveBeenCalledWith(respObj);
     });
 
-    it("should return a json web token that has the user id encoded", async () => {
+    xit("should return a json web token that has the user id encoded", async () => {
       const [{id: expected_id}] = users;
       const [_, {token}] = await to(UserController.login(req, res));
       const { id: decoded_id } = jwt.verify(token, JWT_KEY);
       return expect(decoded_id).toEqual(expected_id.toString());
     });
 
-    xit("should send 404 status and reject with err object for wrong password", async () => {
+    it("should send 404 status and reject with err object for wrong password", async () => {
       req.body = Object.assign(req.body, {password: "wrong password"});
       const expected_error = {
         message: "incorrect email or password", 

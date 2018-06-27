@@ -1,9 +1,7 @@
 const { to } = require("await-to-js");
-const { flow } = require("lodash/fp");
 const { createUser, getUserById, listUsers, getUserByEmail, comparePasswords } = require("../../contexts/accounts");
 const { JWT_KEY } = require("../../config");
 const jwt = require("jsonwebtoken");
-const bcrypt = require('bcryptjs');
 const HandleErrors = require("../../errors/handler");
 
 exports.create = async (req, res) => {
@@ -34,10 +32,18 @@ exports.index = async (req, res) => {
 
 exports.login = async (req, res) => {
   const {email, password} = req.body;
-  const [err, user] = await to(getUserByEmail(email));
+  const [err, {id, passwordHash}] = await to(getUserByEmail(email));
+  const [errObj, _] = comparePasswords(password, passwordHash);
+
+  if (errObj) {
+    return Promise.reject(errObj);
+  } else if (err) {
+    return Promise.reject(err);
+  }
+
   const respObj = {
-    user: user.id,
-    token: jwt.sign({id: user.id}, JWT_KEY, {expiresIn: 86400})
+    user: id,
+    token: jwt.sign({ id }, JWT_KEY, {expiresIn: 86400})
   };
 
   res.status(200).send(respObj);

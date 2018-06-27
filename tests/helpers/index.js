@@ -1,51 +1,21 @@
 const http_mocks = require("node-mocks-http");
 const faker = require("faker");
 const { map, flow, range } = require("lodash/fp");
-const { passwordREGEX } = require("../../models/user/validations");
-const { to } = require("await-to-js");
+const mongoose = require('mongoose');
 
-exports.connectToTestDB = () => {
-  const { DB_URL } = require('../../config');
-  const mongoose = require('mongoose');
+exports.connectToTestDB = db_url => {
 
-  return mongoose.connect(DB_URL, {promiseLibrary: global.Promise})
+  return mongoose.connect(db_url, {promiseLibrary: global.Promise})
     .then(() => {
       return Promise.resolve(mongoose.connection);
     }, reason => Promise.reject(reason));
 };
 
-exports.disconnectTestDB = db => {
+exports.disconnectTestDB = async (connection, db) => {
+  await connection.close();
   return db.close();
 };
 
-exports.disconnectAndClearTestDB = (db, collection) => {
-  return db.dropCollection(collection)
-    .then(() => {
-      return db.close()
-        .then(() => Promise.resolve(null), reason => Promise.reject(reason));
-    }, reason => {
-      const { message } = reason;
-      if (message === "ns not found") {
-        return Promise.reject("No collection to clear. Perhaps already dropped.");
-      }
-
-      return Promise.reject(reason);
-    });
-};
-
-exports.clearDBCollection = async (db, collection) => {
-  return db.dropCollection(collection)
-    .then(() => {
-      return Promise.resolve(`${collection} collection dropped`);
-    }, reason => {
-      const { message } = reason;
-      if (message === "ns not found") {
-        return Promise.reject("No collection to clear. Perhaps already dropped.");
-      }
-
-      return Promise.reject(reason);
-    });
-};
 
 exports.buildResp = () => {
   return http_mocks.createResponse({
