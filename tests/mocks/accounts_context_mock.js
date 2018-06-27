@@ -48,6 +48,18 @@ exports.createUserMock = isValid => {
   return errs => () => Promise.reject(errs);
 }
 
+exports.comparePasswordsMock = isValid => {
+  const errObj = {
+    message: "incorrect password",
+    name: UserErrs.LOGIN_ERR
+  };
+
+  if (isValid) {
+    return () => [null, "pass"];
+  }
+
+  return () => [errObj, null];
+}
 
 
 

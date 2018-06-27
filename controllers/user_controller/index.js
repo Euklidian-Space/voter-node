@@ -36,10 +36,9 @@ exports.login = async (req, res) => {
   const [errObj, _] = comparePasswords(password, passwordHash);
 
   if (errObj) {
+    console.log("dirname: ", __dirname);
     return Promise.reject(errObj);
-  } else if (err) {
-    return Promise.reject(err);
-  }
+  } 
 
   const respObj = {
     user: id,
