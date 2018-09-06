@@ -69,22 +69,22 @@ app.use(morgan('dev'));
  */
 
 // API Routes
-app.use('/', require('./routes/index'));
-app.use('/users', require('./routes/users'));
+// app.use('/', require('./src/routes/index'));
+app.use('/users', require('./src/routes/user_routes'));
 
 // TODO: Create additional routes as necessary
 
 // Serve static assets and index.html in production
-if (ENV === 'production') {
-  // Serve static assets
-  app.use(express.static('client/build'));
+// if (ENV === 'production') {
+//   // Serve static assets
+//   app.use(express.static('client/build'));
 
-  // Serve index.html file if no other routes were matched
-  const { resolve } = require('path');
+//   // Serve index.html file if no other routes were matched
+//   const { resolve } = require('path');
 
-  app.get('**', (req, res) => {
-    res.sendFile(resolve(__dirname, 'client', 'build', 'index.html'));
-  });
-}
+//   app.get('**', (req, res) => {
+//     res.sendFile(resolve(__dirname, 'client', 'build', 'index.html'));
+//   });
+// }
 
 module.exports = app;

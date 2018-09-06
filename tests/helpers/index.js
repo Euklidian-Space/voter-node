@@ -2,6 +2,9 @@ const http_mocks = require("node-mocks-http");
 const faker = require("faker");
 const { map, flow, range } = require("lodash/fp");
 const mongoose = require('mongoose');
+const jwt = require("jsonwebtoken");
+const User = require("../../src/models/user");
+const { JWT_KEY } = require("../../config");
 
 exports.connectToTestDB = db_url => {
 
@@ -60,6 +63,17 @@ exports.createFakePolls = count => {
     range(count),
     map(fakePoll)
   )(0);
+};
+
+exports.populateUsers = async count => {
+  const users = createFakeUsers(count);
+  const insertedUsers = await Promise.all(users.map(u => User.create(u)));
+  return insertedUsers.map(user => {
+    // console.log("assigning")
+    return Object.assign(user.toObject(), {
+      token: jwt.sign({id: user.id}, JWT_KEY, {expiresIn: 500}).toString()
+    });
+  });
 };
 
 function createMondoID() {
