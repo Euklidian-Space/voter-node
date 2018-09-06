@@ -52,6 +52,15 @@ exports.login = async (req, res) => {
   return Promise.resolve(respObj);
 };
 
+exports.verifyToken = (req, res, next) => {
+  const token = req.headers['x-access-token'];
+  const decoded = jwt.verify(token, JWT_KEY);
+
+  req.token = token;
+  req.userID = decoded.id;
+  next();
+};
+
 function token(id, key, tokenModule) {
   return tokenModule.sign({id}, key, {expiresIn: 86400});
 }

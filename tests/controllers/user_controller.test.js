@@ -239,6 +239,45 @@ describe("User Controller", () => {
     });
 
   });
+
+  describe("verifyToken", () => {
+    const user = {
+      id: "some_id_1234",
+      email: "name@example.com",
+      name: "john",
+      polls: []
+    };
+    const next = jest.fn();
+    let token = jwt.sign({id: user.id}, JWT_KEY);
+    beforeEach(() => {
+      req = {
+        headers: {
+          'x-access-token': token
+        }
+      };
+    });
+    it("should call provided next function", () => {
+      UserController.verifyToken(req, res, next);
+      return expect(next).toHaveBeenCalled();
+    });
+
+    it("should assign token and userID to request object", () => {
+      UserController.verifyToken(req, res, next);
+      expect(req.token).toBe(token);
+      return expect(req.userID).toBe(user.id);
+    });
+
+    it("should not call next() for invalid token", () => {
+      token = jwt.sign({id: user.id}, "some wrong secret key");
+      req = {
+        headers: {
+          'x-access-token': token
+        }
+      };
+      UserController.verifyToken(req, res, next);
+      return expect(next).not.toHaveBeenCalled();
+    });
+  });
 });
 
 
