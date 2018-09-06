@@ -23,19 +23,29 @@ describe("Poll", () => {
   });
 
   it("should have candidates with vote count", async () => {
-    const [cand1_id, cand2_id, user_id] = [1, 1, 1].map(generateMongoIDs);
-    const cand1 = { cand_id: cand1_id };
-    const cand2 = { cand_id: cand2_id };
+    const cand1 = { name: "bob" };
+    const cand2 = { name: "john" };
     const poll = new Poll({
       prompt: "some prompt",
-      user: user_id,
-      candidates: [cand1, cand2]
+      candidates: [cand1, cand2],
+      user: generateMongoIDs(1)[0]
     });
     const [errs, _] = await to(poll.validate());
     poll.candidates.forEach(candidate => {
       expect(candidate.vote_count).toBe(0);
     });
     return expect(errs).toBeFalsy();
+  });
+
+  it('should require names for candidates', async () => {
+    const cand1 = {};
+    const cand2 = {};
+    const poll = new Poll({
+      prompt: "some prompt",
+      candidates: [cand1, cand2]
+    });
+    const [errs, _] = await to(poll.validate());
+    return expect(errs).toBeTruthy();
   });
 
   it("should be associated to a user", async () => {

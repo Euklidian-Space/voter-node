@@ -14,7 +14,6 @@ describe("User Model", () => {
     done();
   });
 
-
   it("should not save passwords as plain text", done => {
     const user = new User({name: "john", email: "john@example.com", password: "Password1234!"});
     user.validate(function(err) {

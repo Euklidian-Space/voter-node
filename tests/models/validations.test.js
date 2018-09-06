@@ -1,5 +1,5 @@
-const { validatePassword } = require("src/models/user/validations");
-const { candidateNameUnique } = require("src/models/poll_candidate/validations");
+const { validatePassword } = require("src/schemas/user/validations");
+const { candidateNameUnique } = require("src/schemas/poll_candidate/validations");
 
 describe("validatePassword", () => {
   it("should return a rejected promise when password is too short", done => {

@@ -10,15 +10,24 @@ const {
  } = require("../helpers");
 const User = require("src/models/user");
 const Poll = require("src/models/poll");
-const insertUser = seedUsers(1);
+const insertUsers = seedUsers(10);
 const insert_10_Polls = seedPolls(10);
+const intoDatabase = users => {
+  return Promise.all(users.map(u => {
+    const newUser = new User(u);
+    return newUser.save();
+  }));
+};    
 
 let connection;
 let db;
+let seeded_users;
 
-beforeAll(async () => {
+beforeAll(async done => {
   connection = await connectToTestDB(global.__MONGO_URI__);
   db = connection.db;
+  seeded_users = await insertUsers(intoDatabase);
+  done();
 });
 
 afterAll(async () => {
@@ -26,29 +35,25 @@ afterAll(async () => {
 });
 
 describe("CreatePoll", () => {
-  let ownerID;
-  const intoDatabase = users => {
-    const [user] = users;
-    const newUser = new User(user);
-    ownerID = newUser.id;
-    return newUser.save();
-  };    
-
-  beforeEach(async () => insertUser(intoDatabase));
-
-  it("should insert a poll into the db when valid", async () => {
+  it("should insert a poll into the db when valid and update user record", async () => {
+    const ownerID = seeded_users[0].id;
     const poll = {
      prompt: "which color is the best?",
      candidates: ["green", "brown"],
      user: ownerID
     };
-    const [errs, savedPoll] = await to(createPoll(poll));
+    const savedPoll = await createPoll(poll);
+    expect(savedPoll).toBeTruthy();
 
-    expect(errs).toBeFalsy();
-    expect(savedPoll).toEqual(expect.objectContaining(savedPoll));
-    return expect(
+    const updatedUser = await User.findById(ownerID);
+    expect(updatedUser).toBeTruthy();
+    const expected_poll = savedPoll.id;
+    const received_poll = updatedUser.polls[0].toString();
+
+    expect(
       Poll.find({prompt: "which color is the best?"})
     ).resolves.toHaveLength(1);
+    return expect(received_poll).toEqual(expected_poll);
   });
 
   it("should reject with error message for invalid poll", async () => {
@@ -56,11 +61,9 @@ describe("CreatePoll", () => {
      prompt: "which color is the best?",
      candidates: ["green", "brown"]
     };
-    const expected_err_msg = "Path `user` is required.";
     const [errs, savedPoll] = await to(createPoll(poll));
-    const received_err_msg = errs.errors.user.message;
     expect(savedPoll).toBeFalsy();
-    return expect(received_err_msg).toEqual(expected_err_msg);
+    return expect(errs).toBeTruthy();
   });
 });
 
@@ -70,79 +73,65 @@ describe("castVote", () => {
     candidates: ["green", "brown"]
   };
   let savedPoll;
-  const intoDatabase = users => {
-    const [user] = users;
-    const newUser = new User(user);
-    return newUser.save();
-  };    
 
   beforeEach(async done => {
-    const { id } = await insertUser(intoDatabase);
-    poll.user = id;
+    poll.user = seeded_users[0].id;
     savedPoll = await createPoll(poll);
     done();
   });
 
   it("should update the vote count of given candidate", async () => {
-    const cand_id = savedPoll.candidates[0].cand_id.toString();
+    const cand_name = "green";
     const poll_id = savedPoll.id;
-    const {candidates} = await castVote({poll_id, cand_id});
-    const received_candidate = candidates.find(c => c.cand_id.equals(cand_id));
+    const {candidates} = await castVote({poll_id, cand_name});
+    const received_candidate = candidates.find(c => c.name === cand_name);
     expect(received_candidate).toBeTruthy();
     return expect(received_candidate.vote_count).toBe(1);
   });
 
   it("should save updated poll to db", async () => {
-    const cand_id = savedPoll.candidates[0].cand_id.toString();
+    const cand_name = "green";
     const poll_id = savedPoll.id;
-    await castVote({poll_id, cand_id});
+    await castVote({poll_id, cand_name});
     const {candidates} = await Poll.findById(poll_id);
-    const received_candidate = candidates.find(c => c.cand_id.equals(cand_id));
+    const received_candidate = candidates.find(c => c.name === cand_name);
     expect(received_candidate).toBeTruthy();
     return expect(received_candidate.vote_count).toBe(1);
   });
 
-  it("should return err obj for invalid ids", async () => {
-    const cand_id = 'invalid id';
-    const poll_id = 'invalid id';
-    const expected_err = {
-      name: INVALID_ID,
-      message: `'${poll_id}' is not a valid id`,
-    }
-    return expect(castVote({poll_id, cand_id})).rejects.toEqual(expected_err);
-  });
-
   it("should return err obj for a not found poll id", async () => {
-    const cand_id = savedPoll.candidates[0].cand_id.toString();
+    const cand_name = 'some name';
     const poll_id = generateMongoIDs(1)[0].toString();
     const expected_err = {
       name: PollErrs.POLL_NOT_FOUND_ERR,
       message: `No poll found with id: ${poll_id}`
     };
-    return expect(castVote({poll_id, cand_id})).rejects
+    return expect(castVote({poll_id, cand_name})).rejects
       .toEqual(expected_err);
   });
 });
 
 describe("listPolls", () => {
-  let user;
+  let user1, user2;
   const intoDatabase = polls => {
     const [poll_1, poll_2, poll_3, ...rest] = polls;
-    [user] = generateMongoIDs(1);
+    [user1, user2] = seeded_users;
     polls = [poll_1, poll_2, poll_3]
-      .map(p => Object.assign(p, {user}))
-      .concat(rest)
+      .map(p => Object.assign(p, {user: user1.id}))
+      .concat(rest.map(p => Object.assign(p, {user: user2.id})))
       .map(p => createPoll(p));
-
     return Promise.all(polls);
   };
-
-  beforeAll(() => insert_10_Polls(intoDatabase));
+  
+  beforeAll(async done => {
+    let polls = await insert_10_Polls(intoDatabase);
+    done();
+  });
 
   it("should list all polls for given user id", async () => {
-    const [_, polls] = await to(listPolls(user.toString()));
-    const userPolls = polls.filter(p => p.user.equals(user.toString()));
-    return expect(userPolls.length).toBe(3);
+    const [_, polls] = await to(listPolls(user1.id));
+    const userPolls = polls.filter(p => p.user.equals(user1.id));
+    return expect(userPolls.length).toBeGreaterThan(0);
   });
 });
 

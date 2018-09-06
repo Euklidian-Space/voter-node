@@ -16,7 +16,7 @@ const { createPollMock, castVoteMock, listPollsMock } = require("../mocks/cms_co
 
 afterAll(jest.clearAllMocks);
 
-describe("Poll Controller", () => {
+xdescribe("Poll Controller", () => {
   let req, res, sendSpy, statusMock;
   beforeEach(() => {
     sendSpy = jest.fn();

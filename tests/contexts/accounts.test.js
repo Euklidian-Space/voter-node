@@ -101,6 +101,15 @@ describe("Accounts context", () => {
       };
       return expect(getUserById(id)).rejects.toEqual(expected);
     });
+
+    it("should reject for a falsy id", async () => {
+      const expected = {
+        message: "'undefined' is not a valid id",
+        name: INVALID_ID
+      };
+
+      return expect(getUserById(undefined)).rejects.toEqual(expected);
+    });
   });
 
   describe("listUsers", () => {

@@ -14,7 +14,7 @@ exports.createUser = async userObj => {
 };
 
 exports.getUserById = async id => {
-  if (!id.match(/^[0-9a-f]{24}$/i)) 
+  if (!id || !id.match(/^[0-9a-f]{24}$/i)) 
     return Promise.reject({
       message: `'${id}' is not a valid id`,
       name: INVALID_ID
