@@ -1,5 +1,5 @@
 const { to } = require("await-to-js");
-const { PollErrs, INVALID_ID } = require("../../errors/error_types");
+const { PollErrs } = require("../../errors/error_types");
 const Poll = require("../../models/poll");
 const Accounts = require("../accounts");
 
