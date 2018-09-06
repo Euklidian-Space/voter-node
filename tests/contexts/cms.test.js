@@ -1,6 +1,6 @@
 const { to } = require("await-to-js");
-const { INVALID_ID, PollErrs } = require("src/errors/error_types");
-const { createPoll, castVote, listPolls } = require("src/contexts/CMS");
+const { PollErrs, INVALID_ID } = require("src/errors/error_types");
+const { createPoll, castVote, listUserPolls, getPollById, removePoll } = require("src/contexts/CMS");
 const { 
   connectToTestDB,
   disconnectTestDB,
@@ -111,8 +111,8 @@ describe("castVote", () => {
   });
 });
 
-describe("listPolls", () => {
-  let user1, user2;
+describe("retrieving and deleting polls", () => {
+  let user1, user2, poll, poll2;
   const intoDatabase = polls => {
     const [poll_1, poll_2, poll_3, ...rest] = polls;
     [user1, user2] = seeded_users;
@@ -124,28 +124,80 @@ describe("listPolls", () => {
   };
   
   beforeAll(async done => {
-    let polls = await insert_10_Polls(intoDatabase);
+    [poll, poll2] = await insert_10_Polls(intoDatabase);
     done();
   });
 
-  it("should list all polls for given user id", async () => {
-    const [_, polls] = await to(listPolls(user1.id));
-    const userPolls = polls.filter(p => p.user.equals(user1.id));
-    return expect(userPolls.length).toBeGreaterThan(0);
+  describe("listUserPolls", () => {
+    it("should list all polls for given user id", async () => {
+      const [_, polls] = await to(listUserPolls(user1.id));
+      const userPolls = polls.filter(p => p.user.equals(user1.id));
+      return expect(userPolls.length).toBeGreaterThan(0);
+    });
   });
+
+  describe("getPollById", () => {
+    it("should return poll from db", async () => {
+      let received_poll = await getPollById(poll.id);
+      return expect(received_poll.prompt)
+        .toEqual(poll.prompt);
+    });
+
+    it("should return an error obj when poll is not found", () => {
+      const invalid_id = "000000000000000000000000";
+      return expect(getPollById(invalid_id))
+        .rejects
+        .toEqual({
+          name: PollErrs.POLL_NOT_FOUND_ERR,
+          message: `No poll found with id: ${invalid_id}`          
+        });
+    });
+
+    it("should return an error obj when poll id is invalid", () => {
+      const invalid_id = "some invalid id";
+      return expect(getPollById(invalid_id))
+        .rejects
+        .toEqual({
+          message: `'${invalid_id}' is not a valid id`,
+          name: INVALID_ID
+        })
+    });
+  });
+
+  describe("removePoll", () => {
+    it("should remove poll from DB", async () => {
+      let pollID = poll.id;
+      await removePoll(pollID);
+      let received_poll = await Poll.findById(pollID);
+      return expect(received_poll).toBeNull();
+    });
+
+    it("should return error obj if id not found or invalid id",  () => {
+      const not_found_id = "000000000000000000000000";
+      const invalid_id = "invalid id";
+      expect(removePoll(invalid_id))
+        .rejects
+        .toEqual({
+          message: `'${invalid_id}' is not a valid id`,
+          name: INVALID_ID
+        });
+
+      return expect(removePoll(not_found_id))
+        .rejects
+        .toEqual({
+          name: PollErrs.POLL_NOT_FOUND_ERR,
+          message: `No poll found with id: ${not_found_id}`
+        });
+    });
+
+    it("should remove poll from associated user", async () => {
+      const pollID = poll2.id;
+      await removePoll(pollID);
+      const received_polls = await listUserPolls(user1.id);
+      const received_poll = received_polls.find(p => p.id === pollID);
+      return expect(received_poll).toBeUndefined();
+    });
+
+  });
+
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
