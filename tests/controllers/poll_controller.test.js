@@ -16,7 +16,7 @@ const { createPollMock, castVoteMock, listPollsMock } = require("../mocks/cms_co
 
 afterAll(jest.clearAllMocks);
 
-xdescribe("Poll Controller", () => {
+describe("Poll Controller", () => {
   let req, res, sendSpy, statusMock;
   beforeEach(() => {
     sendSpy = jest.fn();
@@ -104,7 +104,7 @@ xdescribe("Poll Controller", () => {
       req = {
         body: {
           poll_id: poll.id,
-          cand_id: poll.candidates[0].cand_id.toString()
+          cand_name: poll.candidates[0].name
         }
       };
     });
@@ -120,8 +120,6 @@ xdescribe("Poll Controller", () => {
     it("should send status 200 and return poll data in response object", async () => {
       castVote.mockImplementation(resolvedVoteMock(poll));
       const [_, received_poll] = await to(PollController.vote(req, res));
-      const {candidates} = poll;
-      candidates[0].vote_count += 1;
       expect(statusMock).toHaveBeenCalledWith(200);
       expect(sendSpy).toHaveBeenCalledWith(poll);
       return expect(received_poll).toEqual(poll);

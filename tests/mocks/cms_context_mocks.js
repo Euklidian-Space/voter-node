@@ -7,9 +7,9 @@ exports.createPollMock = isValid => {
 
 exports.castVoteMock = isResolved => {
   if (isResolved) {
-    return pollObj => ({cand_id, poll_id}) => {
+    return pollObj => ({cand_name, poll_id}) => {
       const { candidates } = pollObj;
-      const chosen_candidate = candidates.find(c => c.cand_id.equals(cand_id));
+      const chosen_candidate = candidates.find(c => c.name === cand_name);
       chosen_candidate.vote_count += 1;
       return Promise.resolve(pollObj);
     }
