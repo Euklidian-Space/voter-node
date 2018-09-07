@@ -4,7 +4,7 @@ const { last } = require("lodash/fp");
 const { JWT_KEY } = require("config");
 const bcrypt = require('bcryptjs');
 const UserController = require("src/controllers/user_controller");
-const { INVALID_ID, INTERNAL_ERR} = require("src/errors/error_types");
+const { INVALID_ID, INTERNAL_ERR } = require("src/errors/error_types");
 const { seedUsers, generateMongoIDs } = require("../helpers");
 const generate10Users = () => seedUsers(10)(users => users);
 const generateMongoID = () => generateMongoIDs(1)[0];
@@ -38,6 +38,7 @@ describe("User Controller", () => {
   describe("Create", () => {
     const resolvedUserMock = createUserMock(true);
     const createRejectedUserMockWithErr = createUserMock(false);
+    let next;
     beforeEach(() => {
       req = {
         body: {
@@ -46,6 +47,7 @@ describe("User Controller", () => {
           password: "Password1234!"
         }
       };
+      next = jest.fn();
     });
 
     it("should send status 200 and user data in response object", async () => {
@@ -58,7 +60,7 @@ describe("User Controller", () => {
       return expect(send_arg).toEqual({user, token});
     });  
     
-    it("should send status 404 and error message when there is a ValidationError", async () => {
+    it("should call next with errObj", async () => {
       const errResp = {
         errors: {
           fieldA: {message: "msgA"},
@@ -69,11 +71,13 @@ describe("User Controller", () => {
 
       createUser.mockImplementation(createRejectedUserMockWithErr(errResp));
 
-      const [errs, _] =  await to(UserController.create(req, res));
+      // const [errs, _] =  await to(UserController.create(req, res));
+      await UserController.create(req, res, next);
 
-      expect(errs).toEqual(errResp.errors);
-      expect(statusMock).toHaveBeenCalledWith(404);
-      return expect(sendSpy).toHaveBeenCalledWith(errResp.errors);
+      // expect(errs).toEqual(errResp.errors);
+      // expect(statusMock).toHaveBeenCalledWith(404);
+      // return expect(sendSpy).toHaveBeenCalledWith(errResp.errors);
+      return expect(next).toHaveBeenCalledWith(expect.objectContaining(errResp));
     });
   });
 
@@ -87,6 +91,7 @@ describe("User Controller", () => {
     };
     const resolvedGetUserMock = getUserByIdMock(true);
     const rejectedGetUserMock = getUserByIdMock(false);
+    let next;
 
     beforeEach(() => {
       req = {
@@ -94,6 +99,7 @@ describe("User Controller", () => {
           id: valid_id
         }
       };
+      next = jest.fn();
     });
 
     it("should send status of 200 for a valid id", async () => {
@@ -105,17 +111,18 @@ describe("User Controller", () => {
       return expect(statusMock).toHaveBeenCalledWith(200);
     });
 
-    it("should send status 404 for invalid id", async () => {
+    it("should call next with error object", async () => {
       const id = "111111111111111111111111";
       getUserById.mockImplementation(rejectedGetUserMock(INVALID_ID, id));
       req.params.id = id;
-      [err, user] = await to(UserController.show(req, res));
-      expect(err).toEqual({
+      // [err, user] = await to(UserController.show(req, res));
+      await UserController.show(req, res, next);
+      return expect(next).toHaveBeenCalledWith({
         message: `'${id}' is not a valid id`,
         name: INVALID_ID
       });
-      expect(statusMock).toHaveBeenCalledWith(404);
-      return expect(sendSpy).toHaveBeenCalledWith({ message: `'${id}' is not a valid id` });
+      // expect(statusMock).toHaveBeenCalledWith(404);
+      // return expect(sendSpy).toHaveBeenCalledWith({ message: `'${id}' is not a valid id` });
     });
   });
 
@@ -123,6 +130,10 @@ describe("User Controller", () => {
     const fakeUsers = generate10Users();
     const resolvedListUsersMock = listUsersMock(true);
     const rejectedListUserMock = listUsersMock(false);
+    let next;
+    beforeEach(() => {
+      next = jest.fn();
+    })
 
     it("should send a status of 200 and list of users", async () => {
       listUsers.mockImplementation(resolvedListUsersMock(fakeUsers));
@@ -134,18 +145,19 @@ describe("User Controller", () => {
       return expect(sendSpy).toHaveBeenCalledWith(users);
     });
 
-    it("should send a status of 400 and error message if an error occurrs", async () => {
+    it("should call next with errObj", async () => {
       const expected_error = {
         message: "There was a problem fetching users",
         name: INTERNAL_ERR
       };
       listUsers.mockImplementation(rejectedListUserMock(expected_error));
 
-      const [err, users] = await to(UserController.index(req, res));
-      expect(users).toBeFalsy();
-      expect(err).toEqual(expected_error);
-      expect(statusMock).toHaveBeenCalledWith(500);
-      return expect(sendSpy).toHaveBeenCalledWith(expected_error);
+      // const [err, users] = await to(UserController.index(req, res, next));
+      await UserController.index(req, res, next);
+      // expect(users).toBeFalsy();
+      // expect(statusMock).toHaveBeenCalledWith(500);
+      // return expect(sendSpy).toHaveBeenCalledWith(expected_error);
+      return expect(next).toHaveBeenCalledWith(expected_error);
     });
   });
 
@@ -154,8 +166,7 @@ describe("User Controller", () => {
     const rejectedGetUserByEmailMock = getUserByEmailMock(false);
     const validComparePasswordsMock = comparePasswordsMock(true);
     const invalidComparePasswordsMock = comparePasswordsMock(false);
-    let password;
-    let email;
+    let password, email, next;
     const hashPasswords = users => {
       correct_password = users[0].password;
       email = users[0].email;
@@ -178,6 +189,7 @@ describe("User Controller", () => {
         email,
         password
       };
+      next = jest.fn();
       done();
     });
 
@@ -194,19 +206,19 @@ describe("User Controller", () => {
       return expect(decoded_id).toEqual(expected_id.toString());
     });
 
-    it("should reject with err object for wrong password", async () => {
+    it("should call next with errObj for wrong password", async () => {
       comparePasswords.mockImplementation(invalidComparePasswordsMock);
       req.body = Object.assign(req.body, {password: "wrong password"});
       const expected_error = {
         message: "incorrect password", 
         name: "LoginError"
       };
-      const [err, _] = await to(UserController.login(req, res));
 
-      return expect(err).toEqual(expected_error);
+      await to(UserController.login(req, res, next));
+      return expect(next).toHaveBeenCalledWith(expected_error);
     });
 
-    it("should send 404 status for wrong password", async () => {
+    xit("should send 404 status for wrong password", async () => {
       comparePasswords.mockImplementation(invalidComparePasswordsMock);
       req.body = Object.assign(req.body, {password: "wrong password"});
       const expected_send = { message: "incorrect password" };
@@ -216,7 +228,7 @@ describe("User Controller", () => {
       return expect(sendSpy).toHaveBeenCalledWith(expected_send);
     });
 
-    it("should reject with err object for an unknown email", async () => {
+    it("should call next with err object for an unknown email", async () => {
       const expected_error = {
         message: `No user found with email: 'unknown@email.com'`,
         name: "UserNotFoundError"
@@ -224,12 +236,12 @@ describe("User Controller", () => {
       getUserByEmail.mockImplementation(rejectedGetUserByEmailMock("unknown@email.com"));
       req.body = Object.assign(req.body, {email: "unknown@email.com"});
 
-      const [err, _] = await to(UserController.login(req, res));
+      await to(UserController.login(req, res, next));
 
-      return expect(err).toEqual(expected_error);
+      return expect(next).toHaveBeenCalledWith(expected_error);
     });
 
-    it("should send 404 status and error message for unknown email", async () => {
+    xit("should send 404 status and error message for unknown email", async () => {
       getUserByEmail.mockImplementation(rejectedGetUserByEmailMock("unknown@email.com"));
       const expected_send = { message: "No user found with email: 'unknown@email.com'"};
       await to(UserController.login(req, res));
@@ -275,7 +287,10 @@ describe("User Controller", () => {
         }
       };
       UserController.verifyToken(req, res, next);
-      return expect(next).not.toHaveBeenCalled();
+      return expect(next).toHaveBeenCalledWith({
+        message: "Token authentication failure",
+        name: "Auth_Error"
+      });
     });
   });
 });
