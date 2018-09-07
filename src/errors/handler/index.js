@@ -1,7 +1,7 @@
 const { flow } = require("lodash/fp");
 const _handlers = Object.values(require("./handlers"));
 
-function errorHandler(errObj, res) {
+function errorHandler(errObj, _req, res, _next) {
   const handleErrWithResponse = handlers(errObj);
 
   return handleErrWithResponse(res);
@@ -22,7 +22,7 @@ function _default(errObj) {
 
   return res => {
     res.status(500).send(errObj);
-    return Promise.reject(errObj);
+    return Promise.resolve(errObj);
   };
 }
 

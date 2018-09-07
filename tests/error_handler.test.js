@@ -1,8 +1,7 @@
-const { to } = require("await-to-js");
 const HandleError = require("src/errors/handler");
 
 describe("ErrorHandler", () => {
-  let res, sendSpy, statusMock;
+  let res, req, sendSpy, statusMock, next;
   beforeEach(() => {
     sendSpy = jest.fn();
     statusMock = jest.fn().mockImplementation(code => res);
@@ -10,6 +9,7 @@ describe("ErrorHandler", () => {
       send: sendSpy,
       status: statusMock
     };
+    next = jest.fn();
   });
 
   it("should handle ValidationError", async () => {
@@ -19,7 +19,7 @@ describe("ErrorHandler", () => {
       },
       name: "ValidationError"
     };
-    [errs, _] = await to(HandleError(errObj, res));
+    const errs = await HandleError(errObj, req, res);
     expect(errs).toEqual({message: "some message"});
     expect(statusMock).toHaveBeenCalledWith(404);
     expect(sendSpy).toHaveBeenCalledWith({message: "some message"});
@@ -30,7 +30,7 @@ describe("ErrorHandler", () => {
       message: "some message", 
       name: "INVALID_ID_ERR"
     };
-    const [errs, _] = await to(HandleError(errObj, res));
+    const errs = await HandleError(errObj, req, res);
     expect(errs).toEqual(errObj)
     expect(statusMock).toHaveBeenCalledWith(404);
     return expect(sendSpy).toHaveBeenCalledWith({message: errObj.message});
@@ -41,7 +41,7 @@ describe("ErrorHandler", () => {
       message: "user not found.", 
       name: "UserNotFoundError"
     };
-    const [errs, _] = await to(HandleError(errObj, res));
+    const errs = await HandleError(errObj, req, res);
     expect(errs).toEqual(errObj)
     expect(statusMock).toHaveBeenCalledWith(404);
     return expect(sendSpy).toHaveBeenCalledWith({message: errObj.message});
@@ -52,7 +52,7 @@ describe("ErrorHandler", () => {
       message: "some message", 
       name: "PollNotFoundError"
     };
-    const [errs, _] = await to(HandleError(errObj, res));
+    const errs = await HandleError(errObj, req, res);
     expect(errs).toEqual(errObj);
     expect(statusMock).toHaveBeenCalledWith(404);
     return expect(sendSpy).toHaveBeenCalledWith({message: errObj.message});
@@ -63,7 +63,7 @@ describe("ErrorHandler", () => {
       message: "some message",
       name: "LoginError"
     };
-    const [errs, _] = await to(HandleError(errObj, res));
+    const errs = await HandleError(errObj, req, res);
     expect(errs).toEqual(errObj);
     expect(statusMock).toHaveBeenCalledWith(404);
     return expect(sendSpy).toHaveBeenCalledWith({message: errObj.message});
@@ -76,10 +76,21 @@ describe("ErrorHandler", () => {
       },
       name: "SOME_ERROR"
     };
-    [errs, _] = await to(HandleError(errObj, res));
+    const errs = await HandleError(errObj, req, res);
     expect(errs).toEqual(errObj);
     expect(statusMock).toHaveBeenCalledWith(500);
     expect(sendSpy).toHaveBeenCalledWith(errObj);
+  });
+
+  it("should handle Auth_Error", async () => {
+    const errObj = {
+      message: "some message",
+      name: "Auth_Error"
+    };
+    const errs = await HandleError(errObj, req, res);
+    expect(errs).toEqual(errObj);
+    expect(statusMock).toHaveBeenCalledWith(401);
+    return expect(sendSpy).toHaveBeenCalledWith({message: errObj.message});
   });
 
 });
