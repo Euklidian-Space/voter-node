@@ -4,6 +4,7 @@ const express = require('express');
 const helmet = require('helmet');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
+const ErrorHandler = require("./src/errors/handler");
 
 // Local Dependencies
 const { DB_URL, NODE_ENV: ENV } = require('./config');
@@ -71,6 +72,7 @@ app.use(morgan('dev'));
 // API Routes
 // app.use('/', require('./src/routes/index'));
 app.use('/users', require('./src/routes/user_routes'));
+app.use(ErrorHandler);
 
 // TODO: Create additional routes as necessary
 

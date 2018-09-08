@@ -6,7 +6,7 @@ const bcrypt = require('bcryptjs');
 exports.createUser = async userObj => {
   const newUser = new User(userObj);
   const [errs, user] = await to(newUser.save());
-  if (errs){
+  if (errs) {
     return Promise.reject(errs);
   } 
 

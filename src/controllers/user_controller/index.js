@@ -5,8 +5,7 @@ const jwt = require("jsonwebtoken");
 const { AuthErrs } = require("../../errors/error_types");
 
 exports.create = async (req, res, next) => {
-  const newUser = req.body;
-  const [err, user] = await to(createUser(newUser));
+  const [err, user] = await to(createUser(req.body));
   if (err) return next(err);
 
   const respObj = {

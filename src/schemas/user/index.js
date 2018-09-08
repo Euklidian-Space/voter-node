@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const bcrypt = require('bcryptjs');
 const { validatePassword } = require("./validations");
-const PollSchema = require("../poll");
 
 const userSchema = new Schema({
   name: {type: String, required: true},
