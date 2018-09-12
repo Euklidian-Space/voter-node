@@ -9,7 +9,8 @@ exports.create = async (req, res, next) => {
   if (err) return next(err);
 
   const respObj = {
-    user,
+    email: user.email,
+    name: user.name,
     token: token(user.id, JWT_KEY, jwt)
   };
 

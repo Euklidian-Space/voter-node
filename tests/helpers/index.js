@@ -4,6 +4,7 @@ const { map, flow, range } = require("lodash/fp");
 const mongoose = require('mongoose');
 const jwt = require("jsonwebtoken");
 const User = require("../../src/models/user");
+const Poll = require("../../src/models/poll");
 const { JWT_KEY } = require("../../config");
 
 exports.connectToTestDB = db_url => {
@@ -69,11 +70,27 @@ exports.populateUsers = async count => {
   const users = createFakeUsers(count);
   const insertedUsers = await Promise.all(users.map(u => User.create(u)));
   return insertedUsers.map(user => {
-    // console.log("assigning")
     return Object.assign(user.toObject(), {
       token: jwt.sign({id: user.id}, JWT_KEY, {expiresIn: 500}).toString()
     });
   });
+};
+
+exports.populatePolls = async users => {
+  const user_count = users.length;
+  const polls = await Promise.all(fakePollData(user_count * 2).map(poll => {
+    const idx = Math.floor(Math.random() * user_count);
+    poll.user = users[idx]._id;
+    return Poll.create(poll);
+  }));
+
+  await Promise.all(polls.map(poll => {
+    const user_id = poll.user.toString();
+    const update = {$push: {polls: poll}};
+    return User.findByIdAndUpdate(user_id, update);
+  }));
+
+  return polls;
 };
 
 function createMondoID() {
@@ -93,6 +110,23 @@ function createFakeUsers(count) {
   return flow(
     range(count), 
     map(fakeUser)
+  )(0);
+}
+
+function fakePollData(count) {
+  const fakePoll = () => {
+    return {
+      prompt: faker.lorem.text(),
+      candidates: [
+        { name: faker.name.findName(), vote_count: Math.floor(Math.random() * 10) + 1  },
+        { name: faker.name.findName(), vote_count: Math.floor(Math.random() * 10) + 1  }        
+      ],
+    };
+  };
+
+  return flow(
+    range(count),
+    map(fakePoll)
   )(0);
 }
 

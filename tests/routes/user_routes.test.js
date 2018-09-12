@@ -9,14 +9,14 @@ beforeAll(async done => {
 });
 
 describe("Users api routes", () => {
-  describe("GET /users/:id", () => {
+  describe("GET /user/:id", () => {
     it("does not send user if not logged in", () => {
       const id = users[0]._id;
       const expected_resp_body = {
         message: 'Token authentication failure'
       };
       return request(app)
-        .get(`/users/${id}`)
+        .get(`/user/${id}`)
         .expect(401)
         .then(response => {
           expect(response.body).toEqual(expected_resp_body);
@@ -26,7 +26,7 @@ describe("Users api routes", () => {
     it("Sends requested user when they exist", () => {
       const id = users[0]._id;
       return request(app)
-        .get(`/users/${id}`)
+        .get(`/user/${id}`)
         .set("x-access-token", users[0].token)
         .expect(200)
         .then(res => {
@@ -42,7 +42,7 @@ describe("Users api routes", () => {
       };
 
       return request(app)
-        .get(`/users/${id}`)
+        .get(`/user/${id}`)
         .set("x-access-token", users[0].token)
         .expect(404)
         .then(res => {
@@ -51,7 +51,7 @@ describe("Users api routes", () => {
     });
   });
 
-  describe("POST /users/register", () => {
+  xdescribe("POST /user/register", () => {
     let request_body;
     beforeEach(() => {
       request_body = {
@@ -61,16 +61,16 @@ describe("Users api routes", () => {
       };
     });
     it("should send new user id and jwt", () => {
-    // console.log(users[0])
       return request(app)
-        .post("/users/register")
+        .post("/user/register")
         .send(request_body)
         .expect(200)
-        .then(({ body }) => {
+        .then((res) => {
+          const { body } = res;
           console.log(body)
-          expect(body.id).toBeDefined();
-          expect(body.token).toBeDefined();
+          expect(body.user.id).toBeDefined();
+          expect(body.user.token).toBeDefined();
         });
     });
-  });
+  })
 });

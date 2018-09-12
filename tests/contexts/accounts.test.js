@@ -14,9 +14,9 @@ beforeAll(async () => {
   db = connection.db;
 });
 
-afterAll(async () => {
-  await disconnectTestDB(connection, db);
-});
+// afterAll(async () => {
+//   await disconnectTestDB(connection, db);
+// });
 
 describe("Accounts context", () => {
   describe("createUser", () => {
@@ -44,7 +44,7 @@ describe("Accounts context", () => {
         password: "password"
       };
       const [errs, userReceived] = await to(createUser(user));
-      const err_msg = errs.errors.passwordHash.message;
+      const err_msg = errs.errors.password.message;
 
       expect(userReceived).toBeFalsy();
       expect(err_msg).toBe("Password must contain atleast one uppercase letter, one lowercase letter, one number and one special character.");
@@ -61,7 +61,7 @@ describe("Accounts context", () => {
       const [errs, userReceived] = await to(createUser(user));
       const email_err = errs.errors.email.message;
       const name_err = errs.errors.name.message;
-      const password_err = errs.errors.passwordHash;
+      const password_err = errs.errors.password;
 
       expect(userReceived).toBeFalsy();
       expect(password_err).toBeFalsy();

@@ -2,7 +2,7 @@ const reg = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$/;
 
 exports.passwordREGEX = reg;
 
-exports.validatePassword = pw => {
+exports.validatePassword = function(pw) {
   if (pw.length < 8) {
     return Promise.reject("Password must be atleast 8 characters.")
   } else if (!pw.match(reg)) {
@@ -12,3 +12,7 @@ exports.validatePassword = pw => {
     return Promise.resolve(pw);
   }
 };
+
+exports.validatePasswordLength = pw => pw.length >= 8;
+
+exports.validatePasswordFormat = pw => pw.match(reg);

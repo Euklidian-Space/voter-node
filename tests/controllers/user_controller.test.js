@@ -52,12 +52,15 @@ describe("User Controller", () => {
 
     it("should send status 200 and user data in response object", async () => {
       createUser.mockImplementation(resolvedUserMock);
-      const [_, {user, token}] = await to(UserController.create(req, res));
-      const { id: decoded_id } = jwt.verify(token, JWT_KEY);
+      const [_, {email, name, token}] = await to(UserController.create(req, res));
       const send_arg = last(sendSpy.mock.calls)[0];
+      const expected_response = {
+        email,
+        name,
+        token
+      };
 
-      expect(user.id).toEqual(decoded_id);
-      return expect(send_arg).toEqual({user, token});
+      return expect(send_arg).toEqual(expected_response);
     });  
     
     it("should call next with errObj", async () => {

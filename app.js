@@ -71,7 +71,7 @@ app.use(morgan('dev'));
 
 // API Routes
 // app.use('/', require('./src/routes/index'));
-app.use('/users', require('./src/routes/user_routes'));
+app.use('/user', require('./src/routes/user_routes'));
 app.use(ErrorHandler);
 
 // TODO: Create additional routes as necessary

@@ -1,7 +1,7 @@
 const { to } = require("await-to-js");
 const { PollErrs, INVALID_ID } = require("../../errors/error_types");
 const Poll = require("../../models/poll");
-const Accounts = require("../accounts");
+const User = require("../../models/user");
 
 const INVALID_ID_ERR_OBJ = id => {
   return {
@@ -18,20 +18,17 @@ const ID_NOT_FOUND_ERR_OBJ = id => {
 };
 
 async function createPoll({prompt, candidates, user}) {
-  const [user_err, found_user] = await to(Accounts.getUserById(user))
-  if (user_err) return Promise.reject(user_err);
-
   const newPoll = new Poll({
     prompt,
-    user: found_user.id,
+    user
   });
   newPoll.candidates = candidates.map(c => Object.assign({}, {name: c}));
 
   let [errs, savedPoll] = await to(newPoll.save());
   if (errs) return Promise.reject(errs);
 
-  found_user.polls.push(savedPoll.id);
-  [errs, _] = await to(found_user.save());
+  const update = { $push: {polls: savedPoll} };
+  [errs, _] = await to(User.findByIdAndUpdate(user, update));
   if (errs) return Promise.reject(errs);
 
   return Promise.resolve(savedPoll);
