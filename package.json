@@ -8,7 +8,8 @@
     "start": "NODE_PATH=./ node server.js",
     "test-watch": "NODE_PATH=./ nodemon --exec 'npm test'",
     "test": "jest --runInBand",
-    "all_tests": "jest --all"
+    "all_tests": "jest --all",
+    "debug": "NODE_PATH=./ node inspect server.js"
   },
   "author": "Gabriel Grover",
   "license": "MIT",
