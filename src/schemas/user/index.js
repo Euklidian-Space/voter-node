@@ -18,24 +18,6 @@ const userSchema = new Schema({
   polls: [{type: Schema.Types.ObjectId, ref: "Poll"}]
 });
 
-// userSchema.virtual("password")
-//   .get(function() { return this._password; })
-//   .set(function(val) {
-//     this._password = val;
-//     validatePassword(val)
-//       .then(pw => {
-//         const salt = bcrypt.genSaltSync(10);
-//         const hash = bcrypt.hashSync(pw, salt);
-//         this.passwordHash = hash;
-//       }).catch(err => this.invalidate("passwordHash", err));
-//   });
-
-userSchema.pre("validate", function(next) {
-  // console.log("value of this", this);
-  // console.log("password change?: ", this.isModified("password"));
-
-  next();  
-});
 
 userSchema.pre("save", function(next) {
   if (!this.isModified("password")) return next();
