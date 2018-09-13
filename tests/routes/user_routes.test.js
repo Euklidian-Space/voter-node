@@ -51,7 +51,7 @@ describe("Users api routes", () => {
     });
   });
 
-  xdescribe("POST /user/register", () => {
+  describe("POST /user/register", () => {
     let request_body;
     beforeEach(() => {
       request_body = {
@@ -60,6 +60,7 @@ describe("Users api routes", () => {
         password: "Secret1234!"
       };
     });
+
     it("should send new user id and jwt", () => {
       return request(app)
         .post("/user/register")
@@ -67,9 +68,21 @@ describe("Users api routes", () => {
         .expect(200)
         .then((res) => {
           const { body } = res;
-          console.log(body)
-          expect(body.user.id).toBeDefined();
-          expect(body.user.token).toBeDefined();
+          expect(body.name).toBe("johnny5");
+          return expect(body.token).toBeDefined();
+        });
+    });
+
+    it("should send error message", () => {
+      request_body.password = "aaaaaaaaaaaaaaaaaaa"
+      const expected_msg = "Password must contain atleast one uppercase letter, one lowercase letter, one number and one special character.";
+      return request(app)
+        .post("/user/register")
+        .send(request_body)
+        .expect(400)
+        .then(res => {
+          const {body} = res;
+          return expect(body.message).toBe(expected_msg);
         });
     });
   })

@@ -15,14 +15,24 @@ describe("ErrorHandler", () => {
   it("should handle ValidationError", async () => {
     const errObj = {
       errors: {
-        message: "some message"
+        some_path: {
+          message: "Path `some_path` is required",
+          name: "ValidationError",
+          properties: {
+            message: "Path `some_path` is required",
+            path: "some_path"
+          }
+        }
       },
       name: "ValidationError"
     };
     const errs = await HandleError(errObj, req, res);
-    expect(errs).toEqual({message: "some message"});
-    expect(statusMock).toHaveBeenCalledWith(404);
-    expect(sendSpy).toHaveBeenCalledWith({message: "some message"});
+    expect(errs).toEqual({message: "`some_path` is required"});
+    /**
+     * let's change how message looks for this error handler
+     */
+    expect(statusMock).toHaveBeenCalledWith(400);
+    expect(sendSpy).toHaveBeenCalledWith({message: "`some_path` is required"});
   });
 
   it("should handle INVALID_ID error type", async () => {
