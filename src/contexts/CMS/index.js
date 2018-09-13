@@ -43,6 +43,7 @@ async function castVote ({poll_id, cand_name}) {
   chosen_candidate.vote_count += 1;
   return poll.save();
 };
+
 function listUserPolls(user) {
   return Poll.find({ user });
 };
@@ -52,10 +53,9 @@ async function getPollById(id) {
     return Promise.reject(INVALID_ID_ERR_OBJ(id));
 
   const [err, poll] = await to(Poll.findById(id));
-  const notFoundError = ID_NOT_FOUND_ERR_OBJ(id);
 
   if (!poll) {
-    return Promise.reject(notFoundError);
+    return Promise.reject(ID_NOT_FOUND_ERR_OBJ(id));
   } else if (err) {
     return Promise.reject(err);
   }

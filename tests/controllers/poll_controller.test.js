@@ -85,19 +85,6 @@ describe("Poll Controller", () => {
       await PollController.create(req, res, next);
       return expect(next).toHaveBeenCalledWith(expect.objectContaining(errObj));
     });
-
-    xit("should send status 500 for unknown error type", async () => {
-      const errObj = {
-        fieldA: "unknown err object shape",
-        name: "unknown type"
-      };
-
-      createPoll.mockImplementation(rejectedPollMock(errObj));
-      await to(PollController.create(req, res));
-
-      return expect(statusMock).toHaveBeenCalledWith(500);
-    });
-
   });
 
   describe("vote", () => {
@@ -140,23 +127,8 @@ describe("Poll Controller", () => {
         }
       };
       castVote.mockImplementation(rejectedVoteMock(errObj));
-      // const [err, _] = await to(PollController.vote(req, res));
-      // expect(statusMock).toHaveBeenCalledWith(404);
-      // expect(sendSpy).toHaveBeenCalledWith(errObj.errors);
       await PollController.vote(req, res, next);
       return expect(next).toHaveBeenCalledWith(expect.objectContaining(errObj));
-    });
-
-    xit("should send status 500 for unknown error type", async () => {
-      const errObj = {
-        fieldA: "unknown err object shape",
-        name: "unknown type"
-      };
-
-      castVote.mockImplementation(rejectedVoteMock(errObj));
-      await to(PollController.vote(req, res));
-
-      return expect(statusMock).toHaveBeenCalledWith(500);
     });
   });
 

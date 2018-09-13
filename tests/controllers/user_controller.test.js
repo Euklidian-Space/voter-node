@@ -74,12 +74,8 @@ describe("User Controller", () => {
 
       createUser.mockImplementation(createRejectedUserMockWithErr(errResp));
 
-      // const [errs, _] =  await to(UserController.create(req, res));
       await UserController.create(req, res, next);
 
-      // expect(errs).toEqual(errResp.errors);
-      // expect(statusMock).toHaveBeenCalledWith(404);
-      // return expect(sendSpy).toHaveBeenCalledWith(errResp.errors);
       return expect(next).toHaveBeenCalledWith(expect.objectContaining(errResp));
     });
   });
@@ -118,14 +114,11 @@ describe("User Controller", () => {
       const id = "111111111111111111111111";
       getUserById.mockImplementation(rejectedGetUserMock(INVALID_ID, id));
       req.params.id = id;
-      // [err, user] = await to(UserController.show(req, res));
       await UserController.show(req, res, next);
       return expect(next).toHaveBeenCalledWith({
         message: `'${id}' is not a valid id`,
         name: INVALID_ID
       });
-      // expect(statusMock).toHaveBeenCalledWith(404);
-      // return expect(sendSpy).toHaveBeenCalledWith({ message: `'${id}' is not a valid id` });
     });
   });
 
@@ -221,15 +214,6 @@ describe("User Controller", () => {
       return expect(next).toHaveBeenCalledWith(expected_error);
     });
 
-    xit("should send 404 status for wrong password", async () => {
-      comparePasswords.mockImplementation(invalidComparePasswordsMock);
-      req.body = Object.assign(req.body, {password: "wrong password"});
-      const expected_send = { message: "incorrect password" };
-      await to(UserController.login(req, res));
-
-      expect(statusMock).toHaveBeenCalledWith(404);
-      return expect(sendSpy).toHaveBeenCalledWith(expected_send);
-    });
 
     it("should call next with err object for an unknown email", async () => {
       const expected_error = {
@@ -242,15 +226,6 @@ describe("User Controller", () => {
       await to(UserController.login(req, res, next));
 
       return expect(next).toHaveBeenCalledWith(expected_error);
-    });
-
-    xit("should send 404 status and error message for unknown email", async () => {
-      getUserByEmail.mockImplementation(rejectedGetUserByEmailMock("unknown@email.com"));
-      const expected_send = { message: "No user found with email: 'unknown@email.com'"};
-      await to(UserController.login(req, res));
-
-      expect(statusMock).toHaveBeenCalledWith(404);
-      return expect(sendSpy).toHaveBeenCalledWith(expected_send);
     });
 
   });
