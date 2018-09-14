@@ -1,10 +1,12 @@
 const request = require("supertest");
 const app = require("../../app");
 const { populateUsers } = require("../helpers");
-let users;
+const { head } = require("lodash/fp");
+let users, password;
 
 beforeAll(async done => {
   users = await populateUsers(10);
+  password = "pAssword1234!";
   done();
 });
 
@@ -85,5 +87,40 @@ describe("Users api routes", () => {
           return expect(body.message).toBe(expected_msg);
         });
     });
-  })
+  });
+
+  describe("POST /user/login", () => {
+    let request_body, user;
+    beforeEach(() => {
+      user = head(users);
+      request_body = {
+        email: user.email,
+        password
+      };
+    });
+
+    it("should respond with token and email", () => {
+      return request(app)
+        .post("/user/login")
+        .send(request_body)
+        .expect(200)
+        .then(res => {
+          const { body } = res;
+          expect(body.token).toBeTruthy();
+          expect(body.id).toBe(user._id.toString());
+          return expect(body.email).toBe(user.email)
+        });
+    });
+
+    it("should respond with an error message", () => {
+      request_body.password = "Password1234";
+      return request(app)
+        .post("/user/login")
+        .send(request_body)
+        .expect(401)
+        .then(({ body }) => {
+          return expect(body.message).toBe("incorrect password");
+        });
+    });
+  });
 });

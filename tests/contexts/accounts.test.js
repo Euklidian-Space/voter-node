@@ -14,10 +14,6 @@ beforeAll(async () => {
   db = connection.db;
 });
 
-// afterAll(async () => {
-//   await disconnectTestDB(connection, db);
-// });
-
 describe("Accounts context", () => {
   describe("createUser", () => {
     it("should insert a user in DB when valid", done => {

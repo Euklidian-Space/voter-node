@@ -75,7 +75,7 @@ describe("ErrorHandler", () => {
     };
     const errs = await HandleError(errObj, req, res);
     expect(errs).toEqual(errObj);
-    expect(statusMock).toHaveBeenCalledWith(404);
+    expect(statusMock).toHaveBeenCalledWith(401);
     return expect(sendSpy).toHaveBeenCalledWith({message: errObj.message});
   });
 

@@ -40,11 +40,12 @@ exports.login = async (req, res, next) => {
   const [err, user] = await to(getUserByEmail(email));
   if (err) return next(err);
 
-  const [errObj, _] = comparePasswords(password, user.passwordHash);
+  const [errObj, _] = comparePasswords(password, user.password);
   if (errObj) return next(errObj);
 
   const respObj = {
-    user: user.id,
+    id: user.id,
+    email,
     token: token(user.id, JWT_KEY, jwt)
   };
 

@@ -148,11 +148,7 @@ describe("User Controller", () => {
       };
       listUsers.mockImplementation(rejectedListUserMock(expected_error));
 
-      // const [err, users] = await to(UserController.index(req, res, next));
       await UserController.index(req, res, next);
-      // expect(users).toBeFalsy();
-      // expect(statusMock).toHaveBeenCalledWith(500);
-      // return expect(sendSpy).toHaveBeenCalledWith(expected_error);
       return expect(next).toHaveBeenCalledWith(expected_error);
     });
   });
@@ -167,12 +163,12 @@ describe("User Controller", () => {
       correct_password = users[0].password;
       email = users[0].email;
       return users.map(u => {
-        const passwordHash = bcrypt.hashSync(u.password, 1);
+        const password = bcrypt.hashSync(u.password, 1);
         return {
           name: u.name,
           email: u.email,
           id: generateMongoID(),
-          passwordHash
+          password
         };
       });
     }

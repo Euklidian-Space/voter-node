@@ -9,10 +9,6 @@ beforeAll(async () => {
   db = connection.db;
 });
 
-// afterAll(async () => {
-//   await disconnectTestDB(connection, db);
-// });
-
 describe("User Model", () => {
   const fields = ["name", "email", "password"];
 

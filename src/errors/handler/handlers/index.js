@@ -86,7 +86,7 @@ exports.handleLoginError = function(errObj) {
 
   const passedHandler = res => {
     const { message } = errObj;
-    res.status(404).send({ message });
+    res.status(401).send({ message });
     return Promise.resolve(errObj);
   };
 
