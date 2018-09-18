@@ -1,5 +1,5 @@
 const { to } = require("await-to-js");
-const { createPoll, castVote, listPolls } = require("../../contexts/CMS");
+const { createPoll, castVote, listUserPolls } = require("../../contexts/CMS");
 
 exports.create = async (req, res, next) => {
   const [err, poll] = await to(createPoll(req.body));
@@ -12,7 +12,8 @@ exports.create = async (req, res, next) => {
 };
 
 exports.vote = async (req, res, next) => {
-  const [err, poll] = await to(castVote(req.body));
+  const {poll_id, cand_name} = req.body;
+  const [err, poll] = await to(castVote({poll_id, cand_name}));
   if (err) return next(err);
 
   res.status(200).send(poll);
@@ -20,11 +21,12 @@ exports.vote = async (req, res, next) => {
 };
 
 exports.getPolls = async (req, res, next) => {
-  const { user } = req.body;
-  const [err, polls] = await to(listPolls(user));
+  const { id } = req.params;
+  const [err, polls] = await to(listUserPolls(id));
+  console.log("err: ", err)
   if (err) return next(err);
 
-  res.status(200).send(polls);
+  res.status(200).send({ polls });
   return Promise.resolve(polls);
 };
 

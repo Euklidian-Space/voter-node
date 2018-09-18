@@ -242,6 +242,7 @@ describe("User Controller", () => {
         }
       };
     });
+
     it("should call provided next function", () => {
       UserController.verifyToken(req, res, next);
       return expect(next).toHaveBeenCalled();

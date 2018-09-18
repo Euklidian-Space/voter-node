@@ -12,7 +12,7 @@ beforeAll(async () => {
 describe("User Model", () => {
   const fields = ["name", "email", "password"];
 
-  it("should require a name, email, and passwordHash", done => {
+  it("should require a name, email, and password", done => {
     const user = new User();
     user.validate(err => {
       expect(err).toBeTruthy()

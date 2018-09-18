@@ -8,11 +8,11 @@ jest.mock("src/contexts/CMS", () => {
   return {
     createPoll: jest.fn(),
     castVote: jest.fn(),
-    listPolls: jest.fn()
+    listUserPolls: jest.fn()
   };
 });
-const { createPoll, castVote, listPolls } = require("src/contexts/CMS");
-const { createPollMock, castVoteMock, listPollsMock } = require("../mocks/cms_context_mocks");
+const { createPoll, castVote, listUserPolls } = require("src/contexts/CMS");
+const { createPollMock, castVoteMock, listUserPollsMock } = require("../mocks/cms_context_mocks");
 
 let next;
 
@@ -132,31 +132,32 @@ describe("Poll Controller", () => {
     });
   });
 
-  describe("getUserPolls", () => {
-    const resolvedListPollsMock = listPollsMock(true);
-    const rejectedListPollsMock = listPollsMock(false);
+  describe("listUserPolls", () => {
+    const resolvedListPollsMock = listUserPollsMock(true);
+    const rejectedListPollsMock = listUserPollsMock(false);
     const fakePolls = createFakePolls(4);
     const { user } = fakePolls[0]
 
     beforeEach(() => {
-      req.body = {
-        user
+      req.params = {
+        id: user
       };
     })
 
-    it("should call listPolls from CMS context", async () => {
-      listPolls.mockImplementation(resolvedListPollsMock(fakePolls));
+    it("should call listUserPolls from CMS context", async () => {
+      listUserPolls.mockImplementation(resolvedListPollsMock(fakePolls));
       await to(PollController.getPolls(req, res));
-      return expect(listPolls).toHaveBeenCalledWith(user);
+      return expect(listUserPolls).toHaveBeenCalledWith(user);
     });
 
     it("should send 200 status and return polls associated with given user", async () => {
-      listPolls.mockImplementation(resolvedListPollsMock(fakePolls));
-      const expected_polls = [fakePolls[0]];
-      const [_, polls] = await to(PollController.getPolls(req, res));
+      listUserPolls.mockImplementation(resolvedListPollsMock(fakePolls));
+      const expected = {
+        polls: [fakePolls[0]]
+      };
+      await PollController.getPolls(req, res);
       expect(statusMock).toHaveBeenCalledWith(200);
-      expect(sendSpy).toHaveBeenCalledWith(expected_polls);
-      return expect(polls).toEqual(expected_polls);
+      return expect(sendSpy).toHaveBeenCalledWith(expected);
     });
 
     it("should call next with error object", async () => {
@@ -165,10 +166,7 @@ describe("Poll Controller", () => {
         message: "some message"
       };
 
-      listPolls.mockImplementation(rejectedListPollsMock(errObj));
-      // const [errs, _] = await to(PollController.getPolls(req, res));
-      // expect(statusMock).toHaveBeenCalledWith(404);
-      // expect(sendSpy).toHaveBeenCalledWith({message: errObj.message});
+      listUserPolls.mockImplementation(rejectedListPollsMock(errObj));
       await PollController.getPolls(req, res, next);
       return expect(next).toHaveBeenCalledWith(errObj);
     });
