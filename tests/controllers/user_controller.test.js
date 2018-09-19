@@ -1,10 +1,7 @@
 const { to } = require("await-to-js");
-const jwt = require("jsonwebtoken");
-const { last } = require("lodash/fp");
-const { JWT_KEY } = require("config");
 const bcrypt = require('bcryptjs');
 const UserController = require("src/controllers/user_controller");
-const { INVALID_ID, INTERNAL_ERR } = require("src/errors/error_types");
+const { INVALID_ID } = require("src/errors/error_types");
 const { seedUsers, generateMongoIDs, createFakePolls } = require("../helpers");
 const generate10Users = () => seedUsers(10)(users => users);
 const generateMongoID = () => generateMongoIDs(1)[0];
@@ -229,48 +226,6 @@ describe("User Controller", () => {
 
   });
 
-  xdescribe("verifyToken", () => {
-    const user = {
-      id: "some_id_1234",
-      email: "name@example.com",
-      name: "john",
-      polls: []
-    };
-    const next = jest.fn();
-    let token = jwt.sign({id: user.id}, JWT_KEY);
-    beforeEach(() => {
-      req = {
-        headers: {
-          'x-access-token': token
-        }
-      };
-    });
-
-    it("should call provided next function", () => {
-      UserController.verifyToken(req, res, next);
-      return expect(next).toHaveBeenCalled();
-    });
-
-    it("should assign token and userID to request object", () => {
-      UserController.verifyToken(req, res, next);
-      expect(req.token).toBe(token);
-      return expect(req.userID).toBe(user.id);
-    });
-
-    it("should not call next() for invalid token", () => {
-      token = jwt.sign({id: user.id}, "some wrong secret key");
-      req = {
-        headers: {
-          'x-access-token': token
-        }
-      };
-      UserController.verifyToken(req, res, next);
-      return expect(next).toHaveBeenCalledWith({
-        message: "Token authentication failure",
-        name: "Auth_Error"
-      });
-    });
-  });
 
   describe("getPolls", () => {
     const fakePolls = createFakePolls(4);

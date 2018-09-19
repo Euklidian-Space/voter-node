@@ -4,15 +4,6 @@ const { generateMongoIDs, createFakePolls } = require("../helpers");
 const { VALIDATION_ERR, INVALID_ID } = require("src/errors/error_types");
 const Poll = require("src/models/poll");
 
-// jest.mock("src/contexts/CMS", () => {
-//   return {
-//     createPoll: jest.fn(),
-//     castVote: jest.fn(),
-//     listUserPolls: jest.fn()
-//   };
-// });
-// const { createPoll, castVote, listUserPolls } = require("src/contexts/CMS");
-// const { createPollMock, castVoteMock, listUserPollsMock } = require("../mocks/cms_context_mocks");
 
 let next;
 
@@ -20,7 +11,6 @@ beforeEach(() => {
   next = jest.fn();
 });
 
-// afterAll(jest.clearAllMocks);
 
 describe("Poll Controller", () => {
   let req, res, sendSpy, statusMock;
@@ -34,9 +24,6 @@ describe("Poll Controller", () => {
   });
 
   describe("Create", () => {
-    // const resolvedPollMock = createPollMock(true);
-    // const rejectedPollMock = createPollMock(false);
-
     beforeEach(() => {
       req = {
         body: {
@@ -48,7 +35,6 @@ describe("Poll Controller", () => {
     });
 
     it("should call createPoll from CMS context", async () => {
-      // createPoll.mockImplementation(resolvedPollMock);
       const repo = {
         createPoll: jest.fn()
       };
@@ -60,7 +46,6 @@ describe("Poll Controller", () => {
     });
 
     it("should send 200 status", async () => {
-      // createPoll.mockImplementation(resolvedPollMock);
       const repo = {
         createPoll: jest.fn().mockResolvedValue(req.body)
       }
@@ -79,7 +64,6 @@ describe("Poll Controller", () => {
           fieldB: "some data"
         }
       };
-      // createPoll.mockImplementation(rejectedPollMock(errObj));
       const repo = {
         createPoll: jest.fn().mockRejectedValue(errObj)
       };
@@ -90,8 +74,6 @@ describe("Poll Controller", () => {
   });
 
   describe("vote", () => {
-    // const resolvedVoteMock = castVoteMock(true);
-    // const rejectedVoteMock = castVoteMock(false);
     const [fakePoll] = createFakePolls(1);
     const poll = new Poll(fakePoll);
 
@@ -105,7 +87,6 @@ describe("Poll Controller", () => {
     });
 
     it("should call castVote from repo", async () => {
-      // castVote.mockImplementation(resolvedVoteMock(poll));
       const repo = {
         castVote: jest.fn()
       };
@@ -117,7 +98,6 @@ describe("Poll Controller", () => {
     });
 
     it("should send status 200", async () => {
-      // castVote.mockImplementation(resolvedVoteMock(poll));
       const repo = {
         castVote: jest.fn().mockResolvedValue(poll)
       };
@@ -139,7 +119,6 @@ describe("Poll Controller", () => {
         castVote: jest.fn().mockRejectedValue(errObj)
       };
       const { vote } = PollController.actions(repo);
-      // castVote.mockImplementation(rejectedVoteMock(errObj));
       await vote(req, res, next);
       return expect(next).toHaveBeenCalledWith(expect.objectContaining(errObj));
     });

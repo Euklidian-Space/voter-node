@@ -1,28 +1,5 @@
 const { to } = require("await-to-js");
-const { JWT_KEY } = require("config");
-const jwt = require("jsonwebtoken");
-const { AuthErrs } = require("../../errors/error_types");
-
-exports.verifyToken = (req, res, next) => {
-  const token = req.headers['x-access-token'];
-  jwt.verify(token, JWT_KEY, (err, decoded) => {
-    if (err) {
-      return next({
-        message: "Token authentication failure",
-        name: AuthErrs.AUTH_ERR
-      });
-    }
-    req.token = token;
-    req.userID = decoded.id;
-    next();
-  });
-};
-
-function token(id, key, tokenModule) {
-  return tokenModule.sign({id}, key, {expiresIn: 86400});
-}
-
-//actions
+const { token } = require("src/controllers/auth_controller");
 
 exports.actions = repo => {
   const { 
@@ -41,7 +18,7 @@ exports.actions = repo => {
     const respObj = {
       email: user.email,
       name: user.name,
-      token: token(user.id, JWT_KEY, jwt)
+      token: token(user.id)
     };
 
     res.status(200).send(respObj);
@@ -76,7 +53,7 @@ exports.actions = repo => {
     const respObj = {
       id: user.id,
       email,
-      token: token(user.id, JWT_KEY, jwt)
+      token: token(user.id)
     };
 
     res.status(200).send(respObj);
