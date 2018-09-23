@@ -1,11 +1,12 @@
 const request = require("supertest");
 const app = require("../../app");
-const { populateUsers } = require("../helpers");
+const { populateUsers, populatePolls } = require("../helpers");
 const { head } = require("lodash/fp");
 let users, password;
 
 beforeAll(async done => {
   users = await populateUsers(10);
+  polls = await populatePolls(users);
   password = "pAssword1234!";
   done();
 });
@@ -120,6 +121,36 @@ describe("Users api routes", () => {
         .expect(401)
         .then(({ body }) => {
           return expect(body.message).toBe("incorrect password");
+        });
+    });
+  });
+
+  describe("GET /user/:id/polls", () => {
+    it("should send error message for invalid token in header", () => {
+      const id = head(users)._id;
+      const expected_resp_body = {
+        message: 'Token authentication failure'
+      };
+      return request(app)
+        .get(`/user/${id}/polls`)
+        .expect(401)
+        .then(({ body }) => {
+          return expect(body).toEqual(expected_resp_body); 
+        });
+    });
+
+    it("should send polls of associated user id", () => {
+      const id = head(users)._id.toString();
+      const expected_poll_ids = polls.filter(p => p.user.equals(id))
+        .map(p => p._id.toString());
+
+      return request(app)
+        .get(`/user/${id}/polls`)
+        .set("x-access-token", users[0].token)
+        .expect(200)
+        .then(({ body }) => {
+          const received_poll_ids = body.polls.map(p => p._id);
+          return expect(received_poll_ids).toEqual(expected_poll_ids);
         });
     });
   });

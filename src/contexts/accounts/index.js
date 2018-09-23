@@ -1,8 +1,9 @@
-const User = require("../../models/user");
-const { UserErrs, INVALID_ID } = require("../../errors/error_types");
 const { to } = require("await-to-js");
 const bcrypt = require('bcryptjs');
-
+const User = require("../../models/user");
+const Poll = require("src/models/poll");
+const { UserErrs, INVALID_ID } = require("../../errors/error_types");
+ 
 exports.createUser = async userObj => {
   const newUser = new User(userObj);
   const [errs, user] = await to(newUser.save());
@@ -66,7 +67,9 @@ exports.comparePasswords = (password, hash) => {
   return [null, "pass"];
 };
 
-
+exports.listUserPolls = user => {
+  return Poll.find({ user });
+};
 
 
 

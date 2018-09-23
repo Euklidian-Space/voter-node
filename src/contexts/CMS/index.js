@@ -44,16 +44,14 @@ async function castVote ({poll_id, cand_name}) {
   return poll.save();
 };
 
-function listUserPolls(user) {
-  return Poll.find({ user });
-};
+;
 
 async function getPollById(id) {
   if (!isValidID(id)) 
     return Promise.reject(INVALID_ID_ERR_OBJ(id));
 
   const [err, poll] = await to(Poll.findById(id));
-
+ 
   if (!poll) {
     return Promise.reject(ID_NOT_FOUND_ERR_OBJ(id));
   } else if (err) {
@@ -85,7 +83,6 @@ function isValidID(id) {
 module.exports = {
   createPoll,
   castVote,
-  listUserPolls,
   getPollById,
   removePoll
 };

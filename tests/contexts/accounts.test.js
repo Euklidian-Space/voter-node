@@ -1,17 +1,20 @@
 const { to } = require("await-to-js");
 const { INVALID_ID, UserErrs } = require("src/errors/error_types");
-const { listUsers, createUser, getUserByEmail, getUserById, comparePasswords } = require("src/contexts/accounts");
-const { seedUsers, connectToTestDB, disconnectTestDB } = require("../helpers");
+const { 
+  listUsers, 
+  createUser, 
+  getUserByEmail, 
+  getUserById, 
+  comparePasswords,
+  listUserPolls 
+} = require("src/contexts/accounts");
+const { seedUsers, connectToTestDB } = require("../helpers");
 const User = require("src/models/user");
 const insertTenUsers = seedUsers(10);
 const bcrypt = require('bcryptjs');
 
-let connection;
-let db;
-
 beforeAll(async () => {
-  connection = await connectToTestDB(global.__MONGO_URI__);
-  db = connection.db;
+  await connectToTestDB(global.__MONGO_URI__);
 });
 
 describe("Accounts context", () => {
@@ -172,6 +175,24 @@ describe("Accounts context", () => {
       };
       expect(comparePasswords("wrong pw", pw_hash))
         .toEqual([errObj, null]);
+    });
+  });
+ 
+  describe("listUserPolls", () => {
+    let user1_id;
+    const intoDatabase = users => {
+      return Promise.all(users.map(u => createUser(u)));
+    };    
+
+    beforeEach(async () => {
+      let [user] = await insertTenUsers(intoDatabase);
+      user1_id = user.id;
+    });
+
+    it("should list all polls for given user id", async () => {
+      const [_, polls] = await to(listUserPolls(user1_id));
+      const userPolls = polls.filter(p => p.user.equals(user1_id));
+      return expect(userPolls.length).toBeGreaterThanOrEqual(0);
     });
   });
 

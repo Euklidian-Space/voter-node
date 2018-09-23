@@ -1,7 +1,18 @@
 const router = require("express").Router();
-const PollController = require("../controllers/poll_controller");
-const { verifyToken } = require("../controllers/user_controller");
+const PollController = require("src/controllers/poll_controller");
+const { verifyToken } = require("src/controllers/auth_controller");
 
-router.get("/:id", verifyToken, PollController.getPolls);
+function pollRouter(context) {
+  const {
+    create,
+    vote
+  } = PollController.actions(context);
 
-module.exports = router;
+  router.post("/", verifyToken, create);
+  router.post("/vote", verifyToken, vote);
+
+  return router;
+}
+
+
+module.exports = pollRouter;

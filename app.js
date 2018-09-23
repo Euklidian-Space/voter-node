@@ -70,10 +70,11 @@ app.use(morgan('dev'));
  */
 
 // API Routes
-const Accounts = require("./src/contexts/accounts");
+const Accounts = require("src/contexts/accounts");
+const CMS = require("src/contexts/CMS");
 // app.use('/', require('./src/routes/index'));
 app.use('/user', require('./src/routes/user_routes')(Accounts));
-app.use('/poll', require('./src/routes/poll_routes'));
+app.use('/poll', require('./src/routes/poll_routes')(CMS));
 app.use(ErrorHandler);
 
 // TODO: Create additional routes as necessary

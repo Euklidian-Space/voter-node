@@ -1,7 +1,7 @@
 const { to } = require("await-to-js");
 const { last, head, nth } = require("lodash/fp");
 const { PollErrs, INVALID_ID } = require("src/errors/error_types");
-const { createPoll, castVote, listUserPolls, getPollById, removePoll } = require("src/contexts/CMS");
+const { createPoll, castVote, getPollById, removePoll } = require("src/contexts/CMS");
 const { 
   connectToTestDB,
   generateMongoIDs,
@@ -109,13 +109,6 @@ describe("retrieving and deleting polls", () => {
     done();
   });
 
-  describe("listUserPolls", () => {
-    it("should list all polls for given user id", async () => {
-      const [_, polls] = await to(listUserPolls(user1_id));
-      const userPolls = polls.filter(p => p.user.equals(user1_id));
-      return expect(userPolls.length).toBeGreaterThanOrEqual(0);
-    });
-  });
 
   describe("getPollById", () => {
     it("should return poll from db", async () => {
@@ -174,7 +167,7 @@ describe("retrieving and deleting polls", () => {
     it("should remove poll from associated user", async () => {
       const pollID = poll2.id;
       await removePoll(pollID);
-      const received_polls = await listUserPolls(user1_id);
+      const received_polls = seeded_polls.filter(p => p.user.equals(pollID));
       const received_poll = received_polls.find(p => p.id === pollID);
       return expect(received_poll).toBeUndefined();
     });

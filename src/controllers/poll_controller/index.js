@@ -1,10 +1,11 @@
 const { to } = require("await-to-js");
 
 exports.actions = repo => {
-  const { createPoll, castVote, listUserPolls } = repo;
-
+  const { createPoll, castVote } = repo;
+ 
   const create = async (req, res, next) => {
-    const [err, poll] = await to(createPoll(req.body));
+    const { prompt, candidates, user } = req.body;
+    const [err, poll] = await to(createPoll({ prompt, candidates, user}));
     if (err) {
       return next(err);
     }
@@ -21,7 +22,6 @@ exports.actions = repo => {
     res.status(200).send(poll);
     return Promise.resolve(poll);
   };
-
 
   return {
     create, 
