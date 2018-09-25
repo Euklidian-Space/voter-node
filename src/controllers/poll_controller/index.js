@@ -4,8 +4,9 @@ exports.actions = repo => {
   const { createPoll, castVote } = repo;
  
   const create = async (req, res, next) => {
-    const { prompt, candidates, user } = req.body;
-    const [err, poll] = await to(createPoll({ prompt, candidates, user}));
+    const { prompt, candidates } = req.body;
+    const { userID } = req;
+    const [err, poll] = await to(createPoll({ prompt, candidates, user: userID}));
     if (err) {
       return next(err);
     }

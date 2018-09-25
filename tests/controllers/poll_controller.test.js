@@ -29,8 +29,8 @@ describe("Poll Controller", () => {
         body: {
           prompt: "some prompt",
           candidates: ["candA", "candB"],
-          user: "some_user_id"
-        }
+        },
+        userID: "some_user_id"
       };
     });
 
@@ -40,9 +40,10 @@ describe("Poll Controller", () => {
       };
       const { create } = PollController.actions(repo);
       await to(create(req, res));
-      return expect(repo.createPoll).toHaveBeenCalledWith({
-        ...req.body
-      });
+      return expect(repo.createPoll).toHaveBeenCalledWith(expect.objectContaining({
+        ...req.body,
+        user: req.userID
+      }));
     });
 
     it("should send 200 status", async () => {

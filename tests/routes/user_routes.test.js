@@ -30,11 +30,11 @@ describe("Users api routes", () => {
       const id = users[0]._id;
       return request(app)
         .get(`/user/${id}`)
-        .set("x-access-token", users[0].token)
+        .set("x-access-token", head(users).token)
         .expect(200)
         .then(res => {
           const {email} = res.body;
-          expect(email).toBe(users[0].email);
+          expect(email).toBe(head(users).email);
         });
     });
 
@@ -46,7 +46,7 @@ describe("Users api routes", () => {
 
       return request(app)
         .get(`/user/${id}`)
-        .set("x-access-token", users[0].token)
+        .set("x-access-token", head(users).token)
         .expect(404)
         .then(res => {
           expect(res.body).toEqual(expected_resp_body);
